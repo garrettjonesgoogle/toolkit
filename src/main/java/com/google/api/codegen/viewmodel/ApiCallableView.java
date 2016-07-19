@@ -16,29 +16,34 @@ package com.google.api.codegen.viewmodel;
 
 import com.google.auto.value.AutoValue;
 
-import java.util.List;
-
 @AutoValue
-public abstract class ServiceDocView {
+public abstract class ApiCallableView {
+  public abstract ApiCallableType type();
 
-  public abstract String firstLine();
+  public abstract String requestTypeName();
 
-  public abstract List<String> remainingLines();
+  public abstract String responseTypeName();
 
-  public abstract ApiMethodView exampleApiMethod();
+  public abstract String name();
+
+  public abstract String settingsFunctionName();
 
   public static Builder newBuilder() {
-    return new AutoValue_ServiceDocView.Builder();
+    return new AutoValue_ApiCallableView.Builder();
   }
 
   @AutoValue.Builder
   public static abstract class Builder {
-    public abstract Builder firstLine(String val);
+    public abstract Builder type(ApiCallableType type);
 
-    public abstract Builder remainingLines(List<String> val);
+    public abstract Builder requestTypeName(String name);
 
-    public abstract Builder exampleApiMethod(ApiMethodView val);
+    public abstract Builder responseTypeName(String name);
 
-    public abstract ServiceDocView build();
+    public abstract Builder name(String name);
+
+    public abstract Builder settingsFunctionName(String name);
+
+    public abstract ApiCallableView build();
   }
 }

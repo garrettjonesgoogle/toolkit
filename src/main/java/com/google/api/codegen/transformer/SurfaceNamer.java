@@ -29,6 +29,7 @@ import com.google.api.tools.framework.model.Method;
 import com.google.api.tools.framework.model.ProtoElement;
 import com.google.api.tools.framework.model.TypeRef;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +48,10 @@ public class SurfaceNamer extends ViewNamer {
 
   public String getApiWrapperVariableName(Interface interfaze) {
     return varName(Name.upperCamel(interfaze.getSimpleName(), "Api"));
+  }
+
+  public String getApiSettingsClassName(Interface interfaze) {
+    return className(Name.upperCamel(interfaze.getSimpleName(), "Settings"));
   }
 
   public String getVariableName(Name identifier, InitValueConfig initValueConfig) {
@@ -138,6 +143,18 @@ public class SurfaceNamer extends ViewNamer {
     return getDocLines(DocumentationUtil.getDescription(element));
   }
 
+  public List<String> getThrowsDocLines() {
+    return new ArrayList<>();
+  }
+
+  public String getPublicAccessModifier() {
+    return "public";
+  }
+
+  public String getPrivateAccessModifier() {
+    return "private";
+  }
+
   public String getGrpcMethodName(Method method) {
     // This might seem silly, but it makes clear what we're dealing with (upper camel).
     // This is language-independent because of gRPC conventions.
@@ -154,6 +171,43 @@ public class SurfaceNamer extends ViewNamer {
 
   public String getDynamicReturnTypeName(
       ModelTypeTable typeTable, Method method, MethodConfig methodConfig) {
+    return SurfaceNamer.NOT_IMPLEMENTED;
+  }
+
+  public String getStaticReturnTypeName(
+      ModelTypeTable typeTable, Method method, MethodConfig methodConfig) {
+    return SurfaceNamer.NOT_IMPLEMENTED;
+  }
+
+  public String getPagedCallableMethodName(Method method) {
+    return methodName(Name.upperCamel(method.getSimpleName(), "PagedCallable"));
+  }
+
+  public String getPagedCallableName(Method method) {
+    return varName(Name.upperCamel(method.getSimpleName(), "PagedCallable"));
+  }
+
+  public String getCallableMethodName(Method method) {
+    return methodName(Name.upperCamel(method.getSimpleName(), "Callable"));
+  }
+
+  public String getCallableName(Method method) {
+    return varName(Name.upperCamel(method.getSimpleName(), "Callable"));
+  }
+
+  public String getSettingsFunctionName(Method method) {
+    return methodName(Name.upperCamel(method.getSimpleName(), "Settings"));
+  }
+
+  public String getGenericAwareResponseType(ModelTypeTable typeTable, TypeRef outputType) {
+    return SurfaceNamer.NOT_IMPLEMENTED;
+  }
+
+  public String getGetResourceListCallName(Field resourcesField) {
+    return methodName(Name.from("get", resourcesField.getSimpleName(), "list"));
+  }
+
+  public String getAndSavePagedResponseTypeName(ModelTypeTable typeTable, TypeRef resourceType) {
     return SurfaceNamer.NOT_IMPLEMENTED;
   }
 }

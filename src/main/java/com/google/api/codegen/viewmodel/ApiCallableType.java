@@ -14,26 +14,8 @@
  */
 package com.google.api.codegen.viewmodel;
 
-import com.google.auto.value.AutoValue;
-
-import java.util.List;
-
-@AutoValue
-public abstract class InitCodeView {
-  public abstract List<InitCodeLineView> lines();
-
-  public abstract List<FieldSettingView> fieldSettings();
-
-  public static Builder newBuilder() {
-    return new AutoValue_InitCodeView.Builder();
-  }
-
-  @AutoValue.Builder
-  public static abstract class Builder {
-    public abstract Builder lines(List<InitCodeLineView> val);
-
-    public abstract Builder fieldSettings(List<FieldSettingView> val);
-
-    public abstract InitCodeView build();
-  }
+public enum ApiCallableType {
+  SimpleApiCallable,
+  PagedApiCallable,
+  BundlingApiCallable
 }
