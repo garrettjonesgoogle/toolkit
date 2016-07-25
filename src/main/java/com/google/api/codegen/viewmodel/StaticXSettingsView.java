@@ -33,6 +33,8 @@ public abstract class StaticXSettingsView implements ViewModel {
 
   public abstract Iterable<String> authScopes();
 
+  public abstract List<ApiCallSettingsView> callSettings();
+
   public abstract List<String> imports();
 
   public abstract String outputPath();
@@ -59,6 +61,8 @@ public abstract class StaticXSettingsView implements ViewModel {
     public abstract Builder servicePort(Integer val);
 
     public abstract Builder authScopes(Iterable<String> val);
+
+    public abstract Builder callSettings(List<ApiCallSettingsView> callSettings);
 
     public abstract Builder imports(List<String> val);
 

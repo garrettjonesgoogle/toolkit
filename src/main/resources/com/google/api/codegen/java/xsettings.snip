@@ -8,6 +8,7 @@
   @@javax.annotation.Generated("by GAPIC")
   public class {@xsettingsClass.name} extends ServiceApiSettings {
     {@constants(xsettingsClass)}
+    {@members(xsettingsClass)}
   }
 @end
 
@@ -40,4 +41,77 @@
           .setPort(DEFAULT_SERVICE_PORT)
           .provideCredentialsWith(DEFAULT_SERVICE_SCOPES)
           .build();
+  {@""}
+@end
+
+@private members(xsettingsClass)
+  {@methodMembers(xsettingsClass)}
+  {@methodGetters(xsettingsClass)}
+  /**
+   * Returns a builder for this class with recommended defaults.
+   */
+  public static Builder defaultBuilder() {
+    return Builder.createDefault();
+  }
+
+  /**
+   * Returns a new builder for this class.
+   */
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  /**
+   * Returns a builder containing all the values of this settings class.
+   */
+  public Builder toBuilder() {
+    return new Builder(this);
+  }
+@end
+
+@private methodMembers(xsettingsClass)
+  @join settings : xsettingsClass.callSettings
+    @switch settings.type.toString
+    @case "SimpleApiCallable"
+      private final SimpleCallSettings<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.memberName};
+    @case "PagedApiCallable"
+      private final PageStreamingCallSettings<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}, {@settings.resourceTypeName}> {@settings.memberName};
+    @case "BundlingApiCallable"
+      private final BundlingCallSettings<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.memberName};
+    @default
+      $unhandledCase: {@settings.type.toString}$
+    @end
+  @end
+  {@BREAK}
+@end
+
+@private methodGetters(xsettingsClass)
+  @join settings : xsettingsClass.callSettings
+    /**
+     * Returns the object with the settings used for calls to {@settings.methodName}.
+     */
+    @switch settings.type.toString
+    @case "SimpleApiCallable"
+        public SimpleCallSettings<{@settings.requestTypeName}, \
+            {@settings.responseTypeName}> {@settings.fnGetterName}() {
+          return {@settings.memberName};
+       }
+    @case "PagedApiCallable"
+      public PageStreamingCallSettings<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}, {@settings.resourceTypeName}> {@settings.fnGetterName}() {
+        return {@settings.memberName};
+      }
+    @case "BundlingApiCallable"
+      public BundlingCallSettings<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.fnGetterName}() {
+        return {@settings.memberName};
+      }
+    @default
+      $unhandledCase: {@settings.type.toString}$
+    @end
+    {@""}
+  @end
 @end

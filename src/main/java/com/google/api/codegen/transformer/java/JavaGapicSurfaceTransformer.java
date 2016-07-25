@@ -17,17 +17,15 @@ package com.google.api.codegen.transformer.java;
 import com.google.api.codegen.ApiConfig;
 import com.google.api.codegen.InterfaceView;
 import com.google.api.codegen.MethodConfig;
-import com.google.api.codegen.PageStreamingConfig;
 import com.google.api.codegen.ServiceConfig;
 import com.google.api.codegen.gapic.GapicCodePathMapper;
+import com.google.api.codegen.transformer.ApiCallableTransformer;
 import com.google.api.codegen.transformer.ApiMethodTransformer;
 import com.google.api.codegen.transformer.MethodTransformerContext;
 import com.google.api.codegen.transformer.ModelToViewTransformer;
 import com.google.api.codegen.transformer.ModelTypeTable;
 import com.google.api.codegen.transformer.PathTemplateTransformer;
 import com.google.api.codegen.transformer.SurfaceTransformerContext;
-import com.google.api.codegen.viewmodel.ApiCallableType;
-import com.google.api.codegen.viewmodel.ApiCallableView;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
 import com.google.api.codegen.viewmodel.StaticXApiView;
 import com.google.api.codegen.viewmodel.StaticXSettingsView;
@@ -48,6 +46,7 @@ import java.util.List;
 public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   private GapicCodePathMapper pathMapper;
   private PathTemplateTransformer pathTemplateTransformer;
+  private ApiCallableTransformer apiCallableTransformer;
   private ApiMethodTransformer apiMethodTransformer;
 
   private static final String XAPI_TEMPLATE_FILENAME = "java/xapi.snip";
@@ -59,6 +58,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   public JavaGapicSurfaceTransformer(GapicCodePathMapper pathMapper) {
     this.pathMapper = pathMapper;
     this.pathTemplateTransformer = new PathTemplateTransformer();
+    this.apiCallableTransformer = new ApiCallableTransformer();
     this.apiMethodTransformer = new ApiMethodTransformer();
   }
 
@@ -99,7 +99,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     String name = context.getNamer().getApiWrapperClassName(context.getInterface());
     xapiClass.name(name);
     xapiClass.settingsClassName(context.getNamer().getApiSettingsClassName(context.getInterface()));
-    xapiClass.apiCallableMembers(generateApiCallables(context));
+    xapiClass.apiCallableMembers(apiCallableTransformer.generateStaticApiCallables(context));
     xapiClass.pathTemplates(pathTemplateTransformer.generatePathTemplates(context));
     xapiClass.formatResourceFunctions(
         pathTemplateTransformer.generateFormatResourceFunctions(context));
@@ -128,6 +128,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     xsettingsClass.serviceAddress(serviceConfig.getServiceAddress(context.getInterface()));
     xsettingsClass.servicePort(serviceConfig.getServicePort());
     xsettingsClass.authScopes(serviceConfig.getAuthScopes(context.getInterface()));
+    xsettingsClass.callSettings(apiCallableTransformer.generateCallSettings(context));
 
     // must be done as the last step to catch all imports
     xsettingsClass.imports(context.getTypeTable().getImports());
@@ -169,62 +170,6 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     typeTable.saveNicknameFor("java.io.IOException");
     typeTable.saveNicknameFor("java.util.List");
     typeTable.saveNicknameFor("java.util.concurrent.ScheduledExecutorService");
-  }
-
-  private List<ApiCallableView> generateApiCallables(SurfaceTransformerContext context) {
-    List<ApiCallableView> callableMembers = new ArrayList<>();
-
-    for (Method method : context.getInterface().getMethods()) {
-      MethodConfig methodConfig = context.getMethodConfig(method);
-      callableMembers.addAll(generateApiCallables(context, method, methodConfig));
-    }
-
-    return callableMembers;
-  }
-
-  private List<ApiCallableView> generateApiCallables(
-      SurfaceTransformerContext context, Method method, MethodConfig methodConfig) {
-    ModelTypeTable typeTable = context.getTypeTable();
-
-    List<ApiCallableView> apiCallables = new ArrayList<>();
-
-    ApiCallableView.Builder apiCallableBuilder = ApiCallableView.newBuilder();
-
-    apiCallableBuilder.requestTypeName(typeTable.getAndSaveNicknameFor(method.getInputType()));
-    apiCallableBuilder.responseTypeName(typeTable.getAndSaveNicknameFor(method.getOutputType()));
-    apiCallableBuilder.name(context.getNamer().getCallableName(method));
-    apiCallableBuilder.settingsFunctionName(context.getNamer().getSettingsFunctionName(method));
-
-    if (methodConfig.isBundling()) {
-      apiCallableBuilder.type(ApiCallableType.BundlingApiCallable);
-    } else {
-      apiCallableBuilder.type(ApiCallableType.SimpleApiCallable);
-    }
-
-    apiCallables.add(apiCallableBuilder.build());
-
-    if (methodConfig.isPageStreaming()) {
-      PageStreamingConfig pageStreaming = methodConfig.getPageStreaming();
-
-      ApiCallableView.Builder pagedApiCallableBuilder = ApiCallableView.newBuilder();
-
-      String pagedResponseTypeName =
-          context
-              .getNamer()
-              .getAndSavePagedResponseTypeName(
-                  typeTable, pageStreaming.getResourcesField().getType());
-
-      pagedApiCallableBuilder.requestTypeName(
-          typeTable.getAndSaveNicknameFor(method.getInputType()));
-      pagedApiCallableBuilder.responseTypeName(pagedResponseTypeName);
-      pagedApiCallableBuilder.name(context.getNamer().getPagedCallableName(method));
-      pagedApiCallableBuilder.settingsFunctionName(
-          context.getNamer().getSettingsFunctionName(method));
-
-      apiCallables.add(pagedApiCallableBuilder.type(ApiCallableType.PagedApiCallable).build());
-    }
-
-    return apiCallables;
   }
 
   private List<StaticApiMethodView> generateApiMethods(SurfaceTransformerContext context) {

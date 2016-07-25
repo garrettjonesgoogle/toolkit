@@ -130,7 +130,7 @@
           closeables.add(settings.{@apiCallable.settingsFunctionName}().getBundlerFactory());
         }
       @default
-        $unhandledCase: {@apiCallable.getClass.getSimpleName}$
+        $unhandledCase: {@apiCallable.type.toString}$
       @end
     @end
 
