@@ -62,6 +62,10 @@ public class SurfaceNamer extends ViewNamer {
     }
   }
 
+  public String getSetFunctionCallName(Field field) {
+    return getSetFunctionCallName(field.getType(), Name.from(field.getSimpleName()));
+  }
+
   public String getSetFunctionCallName(TypeRef type, Name identifier) {
     if (type.isMap()) {
       return methodName(Name.from("put", "all").join(identifier));
@@ -69,6 +73,18 @@ public class SurfaceNamer extends ViewNamer {
       return methodName(Name.from("add", "all").join(identifier));
     } else {
       return methodName(Name.from("set").join(identifier));
+    }
+  }
+
+  public String getGetFunctionCallName(Field field) {
+    return getGetFunctionCallName(field.getType(), Name.from(field.getSimpleName()));
+  }
+
+  public String getGetFunctionCallName(TypeRef type, Name identifier) {
+    if (type.isRepeated()) {
+      return methodName(Name.from("get").join(identifier).join("list"));
+    } else {
+      return methodName(Name.from("get").join(identifier));
     }
   }
 
@@ -103,6 +119,10 @@ public class SurfaceNamer extends ViewNamer {
 
   public String getPageStreamingDescriptorName(Method method) {
     return varName(Name.upperCamel(method.getSimpleName(), "PageStreamingDescriptor"));
+  }
+
+  public String getPageStreamingDescriptorConstName(Method method) {
+    return inittedConstantName(Name.upperCamel(method.getSimpleName()).join("page_str_desc"));
   }
 
   public void addPageStreamingDescriptorImports(ModelTypeTable typeTable) {

@@ -35,6 +35,8 @@ public abstract class StaticXSettingsView implements ViewModel {
 
   public abstract List<ApiCallSettingsView> callSettings();
 
+  public abstract List<PageStreamingDescriptorClassView> pageStreamingDescriptors();
+
   public abstract List<String> imports();
 
   public abstract String outputPath();
@@ -63,6 +65,9 @@ public abstract class StaticXSettingsView implements ViewModel {
     public abstract Builder authScopes(Iterable<String> val);
 
     public abstract Builder callSettings(List<ApiCallSettingsView> callSettings);
+
+    public abstract Builder pageStreamingDescriptors(
+        List<PageStreamingDescriptorClassView> generateDescriptorClasses);
 
     public abstract Builder imports(List<String> val);
 

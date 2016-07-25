@@ -10,6 +10,7 @@
     {@constants(xsettingsClass)}
     {@members(xsettingsClass)}
     {@constructors(xsettingsClass)}
+    {@descriptors(xsettingsClass)}
   }
 @end
 
@@ -131,4 +132,38 @@
       {@settings.memberName} = settingsBuilder.{@settings.fnGetterName}().build();
     @end
   }
+  {@""}
+@end
+
+@private descriptors(xsettingsClass)
+  {@pageStreamingDescriptors(xsettingsClass)}
+  # {@bundlingDescriptors(xsettingsClass)}
+@end
+
+@private pageStreamingDescriptors(xsettingsClass)
+  @join desc : xsettingsClass.pageStreamingDescriptors
+    private static PageStreamingDescriptor<{@desc.requestTypeName}, {@desc.responseTypeName}, {@desc.resourceTypeName}> {@desc.name} =
+        new PageStreamingDescriptor<{@desc.requestTypeName}, {@desc.responseTypeName}, {@desc.resourceTypeName}>() {
+          @@Override
+          public Object emptyToken() {
+            return {@desc.defaultTokenValue};
+          }
+          @@Override
+          public {@desc.requestTypeName} injectToken({@desc.requestTypeName} payload, Object token) {
+            return {@desc.requestTypeName}
+              .newBuilder(payload)
+              .{@desc.fnSetRequestToken}(({@desc.tokenTypeName}) token)
+              .build();
+          }
+          @@Override
+          public Object extractNextToken({@desc.responseTypeName} payload) {
+            return payload.{@desc.fnGetResponseToken}();
+          }
+          @@Override
+          public Iterable<{@desc.resourceTypeName}> extractResources({@desc.responseTypeName} payload) {
+            return payload.{@desc.fnGetResourcesField}();
+          }
+        };
+    {@""}
+  @end
 @end

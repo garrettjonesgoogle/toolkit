@@ -24,6 +24,7 @@ import com.google.api.codegen.transformer.ApiMethodTransformer;
 import com.google.api.codegen.transformer.MethodTransformerContext;
 import com.google.api.codegen.transformer.ModelToViewTransformer;
 import com.google.api.codegen.transformer.ModelTypeTable;
+import com.google.api.codegen.transformer.PageStreamingTransformer;
 import com.google.api.codegen.transformer.PathTemplateTransformer;
 import com.google.api.codegen.transformer.SurfaceTransformerContext;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
@@ -48,6 +49,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   private PathTemplateTransformer pathTemplateTransformer;
   private ApiCallableTransformer apiCallableTransformer;
   private ApiMethodTransformer apiMethodTransformer;
+  private PageStreamingTransformer pageStreamingTransformer;
 
   private static final String XAPI_TEMPLATE_FILENAME = "java/xapi.snip";
   private static final String XSETTINGS_TEMPLATE_FILENAME = "java/xsettings.snip";
@@ -60,6 +62,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     this.pathTemplateTransformer = new PathTemplateTransformer();
     this.apiCallableTransformer = new ApiCallableTransformer();
     this.apiMethodTransformer = new ApiMethodTransformer();
+    this.pageStreamingTransformer = new PageStreamingTransformer();
   }
 
   @Override
@@ -129,6 +132,8 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     xsettingsClass.servicePort(serviceConfig.getServicePort());
     xsettingsClass.authScopes(serviceConfig.getAuthScopes(context.getInterface()));
     xsettingsClass.callSettings(apiCallableTransformer.generateCallSettings(context));
+    xsettingsClass.pageStreamingDescriptors(
+        pageStreamingTransformer.generateDescriptorClasses(context));
 
     // must be done as the last step to catch all imports
     xsettingsClass.imports(context.getTypeTable().getImports());
