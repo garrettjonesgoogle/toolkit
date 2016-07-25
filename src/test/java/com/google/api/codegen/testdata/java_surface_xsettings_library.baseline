@@ -221,4 +221,30 @@ public class LibraryServiceSettings extends ServiceApiSettings {
   public Builder toBuilder() {
     return new Builder(this);
   }
+
+  private LibraryServiceSettings(Builder settingsBuilder) throws IOException {
+    super(settingsBuilder.getChannelProvider(),
+          settingsBuilder.getExecutorProvider(),
+          settingsBuilder.getGeneratorName(),
+          settingsBuilder.getGeneratorVersion(),
+          settingsBuilder.getClientLibName(),
+          settingsBuilder.getClientLibVersion());
+
+    createShelfSettings = settingsBuilder.createShelfSettings().build();
+    getShelfSettings = settingsBuilder.getShelfSettings().build();
+    listShelvesSettings = settingsBuilder.listShelvesSettings().build();
+    deleteShelfSettings = settingsBuilder.deleteShelfSettings().build();
+    mergeShelvesSettings = settingsBuilder.mergeShelvesSettings().build();
+    createBookSettings = settingsBuilder.createBookSettings().build();
+    publishSeriesSettings = settingsBuilder.publishSeriesSettings().build();
+    getBookSettings = settingsBuilder.getBookSettings().build();
+    listBooksSettings = settingsBuilder.listBooksSettings().build();
+    deleteBookSettings = settingsBuilder.deleteBookSettings().build();
+    updateBookSettings = settingsBuilder.updateBookSettings().build();
+    moveBookSettings = settingsBuilder.moveBookSettings().build();
+    listStringsSettings = settingsBuilder.listStringsSettings().build();
+    addCommentsSettings = settingsBuilder.addCommentsSettings().build();
+    getBookFromArchiveSettings = settingsBuilder.getBookFromArchiveSettings().build();
+    updateBookIndexSettings = settingsBuilder.updateBookIndexSettings().build();
+  }
 }

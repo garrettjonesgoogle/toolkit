@@ -9,6 +9,7 @@
   public class {@xsettingsClass.name} extends ServiceApiSettings {
     {@constants(xsettingsClass)}
     {@members(xsettingsClass)}
+    {@constructors(xsettingsClass)}
   }
 @end
 
@@ -67,6 +68,7 @@
   public Builder toBuilder() {
     return new Builder(this);
   }
+  {@""}
 @end
 
 @private methodMembers(xsettingsClass)
@@ -114,4 +116,19 @@
     @end
     {@""}
   @end
+@end
+
+@private constructors(xsettingsClass)
+  private {@xsettingsClass.name}(Builder settingsBuilder) throws IOException {
+    super(settingsBuilder.getChannelProvider(),
+          settingsBuilder.getExecutorProvider(),
+          settingsBuilder.getGeneratorName(),
+          settingsBuilder.getGeneratorVersion(),
+          settingsBuilder.getClientLibName(),
+          settingsBuilder.getClientLibVersion());
+
+    @join settings : xsettingsClass.callSettings
+      {@settings.memberName} = settingsBuilder.{@settings.fnGetterName}().build();
+    @end
+  }
 @end
