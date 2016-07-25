@@ -137,7 +137,7 @@
 
 @private descriptors(xsettingsClass)
   {@pageStreamingDescriptors(xsettingsClass)}
-  # {@bundlingDescriptors(xsettingsClass)}
+  {@bundlingDescriptors(xsettingsClass)}
 @end
 
 @private pageStreamingDescriptors(xsettingsClass)
@@ -165,5 +165,85 @@
           }
         };
     {@""}
+  @end
+@end
+
+@private bundlingDescriptors(xsettingsClass)
+  @join desc : xsettingsClass.bundlingDescriptors
+    private static BundlingDescriptor<{@desc.requestTypeName}, {@desc.responseTypeName}> {@desc.name} =
+        new BundlingDescriptor<{@desc.requestTypeName}, {@desc.responseTypeName}>() {
+          @@Override
+          public String getBundlePartitionKey({@desc.requestTypeName} request) {
+            return {@partitionKeyCode(desc)};
+          }
+
+          @@Override
+          public {@desc.requestTypeName} mergeRequests(Collection<{@desc.requestTypeName}> requests) {
+            {@desc.requestTypeName} firstRequest = requests.iterator().next();
+
+            {@desc.bundledFieldTypeName} elements = new ArrayList<>();
+            for ({@desc.requestTypeName} request : requests) {
+              elements.addAll(request.{@desc.fnGetBundledField}());
+            }
+
+            {@desc.requestTypeName} bundleRequest =
+                {@desc.requestTypeName}.newBuilder()
+                    {@fieldCopyCalls(desc.discriminatorFieldCopies)}
+                    .{@desc.fnSetBundledField}(elements)
+                    .build();
+            return bundleRequest;
+          }
+
+          @@Override
+          public void splitResponse(
+              {@desc.responseTypeName} bundleResponse,
+              Collection<? extends RequestIssuer<{@desc.requestTypeName}, {@desc.responseTypeName}>> bundle) {
+            # TODO(garrettjones) support case of no subresponse_field (e.g. Logging)
+            int bundleMessageIndex = 0;
+            for (RequestIssuer<{@desc.requestTypeName}, {@desc.responseTypeName}> responder : bundle) {
+              {@desc.subresponseTypeName} subresponseElements = new ArrayList<>();
+              int subresponseCount = responder.getRequest().{@desc.fnGetBundledFieldCount}();
+              for (int i = 0; i < subresponseCount; i++) {
+                subresponseElements.add(bundleResponse.{@desc.fnGetSubresponseByIndex}(bundleMessageIndex));
+                bundleMessageIndex += 1;
+              }
+              {@desc.responseTypeName} response =
+                  {@desc.responseTypeName}.newBuilder().{@desc.fnSetSubresponse}(subresponseElements).build();
+              responder.setResponse(response);
+            }
+          }
+
+          @@Override
+          public void splitException(
+              Throwable throwable,
+              Collection<? extends RequestIssuer<{@desc.requestTypeName}, {@desc.responseTypeName}>> bundle) {
+            for (RequestIssuer<{@desc.requestTypeName}, {@desc.responseTypeName}> responder : bundle) {
+              responder.setException(throwable);
+            }
+          }
+
+          @@Override
+          public long countElements({@desc.requestTypeName} request) {
+            return request.{@desc.fnGetBundledFieldCount}();
+          }
+
+          @@Override
+          public long countBytes({@desc.requestTypeName} request) {
+            return request.getSerializedSize();
+          }
+        };
+    {@""}
+  @end
+@end
+
+@private partitionKeyCode(bundlingDesc)
+  @join partitionKey : bundlingDesc.partitionKeys on " + "
+    request.{@partitionKey.fnGetCallName}() + {@partitionKey.separatorLiteral}
+  @end
+@end
+
+@private fieldCopyCalls(fieldCopies)
+  @join fieldCopy : fieldCopies
+    .{@fieldCopy.fnSetFunctionCallName}(firstRequest.{@fieldCopy.fnGetFunctionCallName}())
   @end
 @end

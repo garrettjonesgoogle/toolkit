@@ -317,4 +317,67 @@ public class LibraryServiceSettings extends ServiceApiSettings {
         }
       };
 
+  private static BundlingDescriptor<PublishSeriesRequest, PublishSeriesResponse> PUBLISH_SERIES_BUNDLING_DESC =
+      new BundlingDescriptor<PublishSeriesRequest, PublishSeriesResponse>() {
+        @Override
+        public String getBundlePartitionKey(PublishSeriesRequest request) {
+          return request.getEdition() + "|" + request.getName() + "|";
+        }
+
+        @Override
+        public PublishSeriesRequest mergeRequests(Collection<PublishSeriesRequest> requests) {
+          PublishSeriesRequest firstRequest = requests.iterator().next();
+
+          List<Book> elements = new ArrayList<>();
+          for (PublishSeriesRequest request : requests) {
+            elements.addAll(request.getBooksList());
+          }
+
+          PublishSeriesRequest bundleRequest =
+              PublishSeriesRequest.newBuilder()
+                  .setEdition(firstRequest.getEdition())
+                  .setName(firstRequest.getName())
+                  .addAllBooks(elements)
+                  .build();
+          return bundleRequest;
+        }
+
+        @Override
+        public void splitResponse(
+            PublishSeriesResponse bundleResponse,
+            Collection<? extends RequestIssuer<PublishSeriesRequest, PublishSeriesResponse>> bundle) {
+          int bundleMessageIndex = 0;
+          for (RequestIssuer<PublishSeriesRequest, PublishSeriesResponse> responder : bundle) {
+            List<String> subresponseElements = new ArrayList<>();
+            int subresponseCount = responder.getRequest().getBooksCount();
+            for (int i = 0; i < subresponseCount; i++) {
+              subresponseElements.add(bundleResponse.getBookNames(bundleMessageIndex));
+              bundleMessageIndex += 1;
+            }
+            PublishSeriesResponse response =
+                PublishSeriesResponse.newBuilder().addAllBookNames(subresponseElements).build();
+            responder.setResponse(response);
+          }
+        }
+
+        @Override
+        public void splitException(
+            Throwable throwable,
+            Collection<? extends RequestIssuer<PublishSeriesRequest, PublishSeriesResponse>> bundle) {
+          for (RequestIssuer<PublishSeriesRequest, PublishSeriesResponse> responder : bundle) {
+            responder.setException(throwable);
+          }
+        }
+
+        @Override
+        public long countElements(PublishSeriesRequest request) {
+          return request.getBooksCount();
+        }
+
+        @Override
+        public long countBytes(PublishSeriesRequest request) {
+          return request.getSerializedSize();
+        }
+      };
+
 }

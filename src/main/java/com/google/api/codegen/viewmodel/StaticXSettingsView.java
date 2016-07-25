@@ -37,6 +37,8 @@ public abstract class StaticXSettingsView implements ViewModel {
 
   public abstract List<PageStreamingDescriptorClassView> pageStreamingDescriptors();
 
+  public abstract List<BundlingDescriptorClassView> bundlingDescriptors();
+
   public abstract List<String> imports();
 
   public abstract String outputPath();
@@ -68,6 +70,8 @@ public abstract class StaticXSettingsView implements ViewModel {
 
     public abstract Builder pageStreamingDescriptors(
         List<PageStreamingDescriptorClassView> generateDescriptorClasses);
+
+    public abstract Builder bundlingDescriptors(List<BundlingDescriptorClassView> val);
 
     public abstract Builder imports(List<String> val);
 

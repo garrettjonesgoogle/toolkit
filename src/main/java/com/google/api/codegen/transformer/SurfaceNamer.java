@@ -88,6 +88,24 @@ public class SurfaceNamer extends ViewNamer {
     }
   }
 
+  public String getGetCountCallName(Field field) {
+    if (field.isRepeated()) {
+      return methodName(Name.from("get", field.getSimpleName(), "count"));
+    } else {
+      throw new IllegalArgumentException(
+          "Non-repeated field " + field.getSimpleName() + " has no count function.");
+    }
+  }
+
+  public String getGetByIndexCallName(Field field) {
+    if (field.isRepeated()) {
+      return methodName(Name.from("get", field.getSimpleName()));
+    } else {
+      throw new IllegalArgumentException(
+          "Non-repeated field " + field.getSimpleName() + " has no get-by-index function.");
+    }
+  }
+
   public String getPathTemplateName(CollectionConfig collectionConfig) {
     return inittedConstantName(Name.from(collectionConfig.getEntityName(), "path", "template"));
   }
@@ -123,6 +141,10 @@ public class SurfaceNamer extends ViewNamer {
 
   public String getPageStreamingDescriptorConstName(Method method) {
     return inittedConstantName(Name.upperCamel(method.getSimpleName()).join("page_str_desc"));
+  }
+
+  public String getBundlingDescriptorConstName(Method method) {
+    return inittedConstantName(Name.upperCamel(method.getSimpleName()).join("bundling_desc"));
   }
 
   public void addPageStreamingDescriptorImports(ModelTypeTable typeTable) {
