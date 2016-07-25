@@ -438,6 +438,16 @@ public class ApiMethodTransformer {
     return allDocs;
   }
 
+  public SimpleParamDocView getRequestObjectParamDoc(
+      MethodTransformerContext context, TypeRef typeRef) {
+    return SimpleParamDocView.newBuilder()
+        .paramName("request")
+        .typeName(context.getTypeTable().getAndSaveNicknameFor(typeRef))
+        .firstLine("The request object containing all of the parameters for the API call.")
+        .remainingLines(Arrays.<String>asList())
+        .build();
+  }
+
   private ParamDocView getOptionalArrayParamDoc(
       MethodTransformerContext context, Iterable<Field> fields) {
     MapParamDocView.Builder paramDoc = MapParamDocView.newBuilder();
