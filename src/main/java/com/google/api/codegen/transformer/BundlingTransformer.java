@@ -100,5 +100,4 @@ public class BundlingTransformer {
     }
     return fieldCopies;
   }
-
 }

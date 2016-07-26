@@ -220,7 +220,7 @@ public class SurfaceNamer extends ViewNamer {
 
   public String getStaticReturnTypeName(
       ModelTypeTable typeTable, Method method, MethodConfig methodConfig) {
-    return SurfaceNamer.NOT_IMPLEMENTED;
+    return getNotImplementedString("SurfaceNamer.getStaticReturnTypeName");
   }
 
   public String getPagedCallableMethodName(Method method) {
@@ -248,7 +248,7 @@ public class SurfaceNamer extends ViewNamer {
   }
 
   public String getGenericAwareResponseType(ModelTypeTable typeTable, TypeRef outputType) {
-    return SurfaceNamer.NOT_IMPLEMENTED;
+    return getNotImplementedString("SurfaceNamer.getGenericAwareResponseType");
   }
 
   public String getGetResourceListCallName(Field resourcesField) {
@@ -256,6 +256,6 @@ public class SurfaceNamer extends ViewNamer {
   }
 
   public String getAndSavePagedResponseTypeName(ModelTypeTable typeTable, TypeRef resourceType) {
-    return SurfaceNamer.NOT_IMPLEMENTED;
+    return getNotImplementedString("SurfaceNamer.getAndSavePagedResponseTypeName");
   }
 }

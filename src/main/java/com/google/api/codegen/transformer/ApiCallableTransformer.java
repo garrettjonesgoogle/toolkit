@@ -111,7 +111,11 @@ public class ApiCallableTransformer {
       settings.resourceTypeName(
           context.getTypeTable().getAndSaveNicknameForElementType(resourceType));
     } else {
-      settings.resourceTypeName(SurfaceNamer.NOT_IMPLEMENTED);
+      settings.resourceTypeName(
+          context
+              .getNamer()
+              .getNotImplementedString(
+                  "ApiCallableTransformer.generateApiCallableSettings - resourceTypeName"));
       if (methodConfig.isBundling()) {
         settings.type(ApiCallableType.BundlingApiCallable);
       } else {
