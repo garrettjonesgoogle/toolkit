@@ -20,8 +20,8 @@ import com.google.api.codegen.metacode.InitValueConfig;
 import com.google.api.codegen.util.CommonRenderingUtil;
 import com.google.api.codegen.util.Name;
 import com.google.api.codegen.util.NameFormatter;
+import com.google.api.codegen.util.NameFormatterMixin;
 import com.google.api.codegen.util.NamePath;
-import com.google.api.codegen.util.ViewNamer;
 import com.google.api.tools.framework.aspects.documentation.model.DocumentationUtil;
 import com.google.api.tools.framework.model.Field;
 import com.google.api.tools.framework.model.Interface;
@@ -33,11 +33,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A SurfaceNamer provides language-specific names or other strings.
+ * A SurfaceNamer provides language-specific names for specific components of a view for a surface.
+ *
+ * Naming is composed of two steps:
+ *
+ * 1. Composing a Name instance with the name pieces
+ * 2. Formatting the Name for the particular type of identifier needed.
+ *
+ * This class delegates step 2 to the provided name formatter, which generally
+ * would be a language-specific namer.
  */
-public class SurfaceNamer extends ViewNamer {
-  public SurfaceNamer(NameFormatter languageNamer) {
+public class SurfaceNamer extends NameFormatterMixin {
+  private ModelTypeFormatter modelTypeFormatter;
+
+  public SurfaceNamer(NameFormatter languageNamer, ModelTypeFormatter modelTypeFormatter) {
     super(languageNamer);
+    this.modelTypeFormatter = modelTypeFormatter;
+  }
+
+  public ModelTypeFormatter getModelTypeFormatter() {
+    return modelTypeFormatter;
   }
 
   public String getNotImplementedString(String feature) {
@@ -205,7 +220,7 @@ public class SurfaceNamer extends ViewNamer {
     return Name.upperCamel(method.getSimpleName()).toUpperCamel();
   }
 
-  public String getRetrySettingsClassName() {
+  public String getRetrySettingsTypeName() {
     return getNotImplementedString("SurfaceNamer.getRetrySettingsClassName");
   }
 
@@ -213,8 +228,7 @@ public class SurfaceNamer extends ViewNamer {
     return getNotImplementedString("SurfaceNamer.getOptionalArrayTypeName");
   }
 
-  public String getDynamicReturnTypeName(
-      ModelTypeTable typeTable, Method method, MethodConfig methodConfig) {
+  public String getDynamicReturnTypeName(Method method, MethodConfig methodConfig) {
     return getNotImplementedString("SurfaceNamer.getDynamicReturnTypeName");
   }
 
