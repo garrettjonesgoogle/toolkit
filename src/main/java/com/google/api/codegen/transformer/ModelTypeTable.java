@@ -43,6 +43,7 @@ public class ModelTypeTable implements ModelTypeFormatter {
     return typeFormatter.getFullNameFor(type);
   }
 
+  @Override
   public String getFullNameForElementType(TypeRef type) {
     return typeFormatter.getFullNameForElementType(type);
   }
