@@ -35,6 +35,11 @@ public class ModelTypeFormatterImpl implements ModelTypeFormatter {
   }
 
   @Override
+  public String getFullNameForElementType(TypeRef type) {
+    return typeNameConverter.getTypeNameForElementType(type).getFullName();
+  }
+
+  @Override
   public String getNicknameFor(TypeRef type) {
     return typeNameConverter.getTypeName(type).getNickname();
   }

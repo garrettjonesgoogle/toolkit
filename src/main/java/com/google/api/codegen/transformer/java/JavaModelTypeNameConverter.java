@@ -15,8 +15,10 @@
 package com.google.api.codegen.transformer.java;
 
 import com.google.api.codegen.LanguageUtil;
-import com.google.api.codegen.transformer.ModelTypeTable;
+import com.google.api.codegen.transformer.ModelTypeNameConverter;
 import com.google.api.codegen.util.TypeName;
+import com.google.api.codegen.util.TypeNameConverter;
+import com.google.api.codegen.util.TypedValue;
 import com.google.api.codegen.util.java.JavaTypeTable;
 import com.google.api.tools.framework.model.ProtoElement;
 import com.google.api.tools.framework.model.ProtoFile;
@@ -27,13 +29,11 @@ import com.google.common.io.Files;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * The ModelTypeTable for Java.
  */
-public class JavaModelTypeTable implements ModelTypeTable {
-  private JavaTypeTable javaTypeTable;
+public class JavaModelTypeNameConverter implements ModelTypeNameConverter {
 
   /**
    * The package prefix protoc uses if no java package option was provided.
@@ -84,54 +84,19 @@ public class JavaModelTypeTable implements ModelTypeTable {
           .put(Type.TYPE_BYTES, "ByteString.copyFromUtf8(\"\")")
           .build();
 
+  private TypeNameConverter typeNameConverter;
+
   /**
    * Standard constructor.
    */
-  public JavaModelTypeTable() {
-    javaTypeTable = new JavaTypeTable();
+  public JavaModelTypeNameConverter() {
+    this.typeNameConverter = new JavaTypeTable();
   }
 
   @Override
-  public ModelTypeTable cloneEmpty() {
-    return new JavaModelTypeTable();
-  }
-
-  @Override
-  public void saveNicknameFor(String fullName) {
-    getAndSaveNicknameFor(fullName);
-  }
-
-  @Override
-  public String getFullNameFor(TypeRef type) {
-    return getTypeName(type).getFullName();
-  }
-
-  @Override
-  public String getFullNameForElementType(TypeRef type) {
-    return getTypeNameForElementType(type, true).getFullName();
-  }
-
-  @Override
-  public String getNicknameFor(TypeRef type) {
-    return getTypeName(type).getNickname();
-  }
-
-  @Override
-  public String getAndSaveNicknameFor(String fullName) {
-    return javaTypeTable.getAndSaveNicknameFor(fullName);
-  }
-
-  /**
-   * Returns the Java representation of a reference to a type.
-   */
-  @Override
-  public String getAndSaveNicknameFor(TypeRef type) {
-    return javaTypeTable.getAndSaveNicknameFor(getTypeName(type));
-  }
-
-  private TypeName getTypeName(TypeRef type) {
+  public TypeName getTypeName(TypeRef type) {
     if (type.isMap()) {
-      TypeName mapTypeName = javaTypeTable.getTypeName("java.util.Map");
+      TypeName mapTypeName = typeNameConverter.getTypeName("java.util.Map");
       TypeName keyTypeName = getTypeNameForElementType(type.getMapKeyField().getType(), true);
       TypeName valueTypeName = getTypeNameForElementType(type.getMapValueField().getType(), true);
       return new TypeName(
@@ -141,7 +106,7 @@ public class JavaModelTypeTable implements ModelTypeTable {
           keyTypeName,
           valueTypeName);
     } else if (type.isRepeated()) {
-      TypeName listTypeName = javaTypeTable.getTypeName("java.util.List");
+      TypeName listTypeName = typeNameConverter.getTypeName("java.util.List");
       TypeName elementTypeName = getTypeNameForElementType(type, true);
       return new TypeName(
           listTypeName.getFullName(), listTypeName.getNickname(), "%s<%i>", elementTypeName);
@@ -151,21 +116,8 @@ public class JavaModelTypeTable implements ModelTypeTable {
   }
 
   @Override
-  public String getAndSaveNicknameForElementType(TypeRef type) {
-    return javaTypeTable.getAndSaveNicknameFor(getTypeNameForElementType(type, true));
-  }
-
-  @Override
-  public String getAndSaveNicknameForContainer(String containerFullName, String elementFullName) {
-    TypeName containerTypeName = javaTypeTable.getTypeName(containerFullName);
-    TypeName elementTypeName = javaTypeTable.getTypeName(elementFullName);
-    TypeName completeTypeName =
-        new TypeName(
-            containerTypeName.getFullName(),
-            containerTypeName.getNickname(),
-            "%s<%i>",
-            elementTypeName);
-    return javaTypeTable.getAndSaveNicknameFor(completeTypeName);
+  public TypeName getTypeNameForElementType(TypeRef type) {
+    return getTypeNameForElementType(type, true);
   }
 
   /**
@@ -178,7 +130,7 @@ public class JavaModelTypeTable implements ModelTypeTable {
       if (primitiveTypeName.contains(".")) {
         // Fully qualified type name, use regular type name resolver. Can skip boxing logic
         // because those types are already boxed.
-        return javaTypeTable.getTypeName(primitiveTypeName);
+        return typeNameConverter.getTypeName(primitiveTypeName);
       } else {
         if (shouldBoxPrimitives) {
           return new TypeName(JavaTypeTable.getBoxedTypeName(primitiveTypeName));
@@ -195,11 +147,6 @@ public class JavaModelTypeTable implements ModelTypeTable {
       default:
         throw new IllegalArgumentException("unknown type kind: " + type.getKind());
     }
-  }
-
-  @Override
-  public List<String> getImports() {
-    return javaTypeTable.getImports();
   }
 
   @Override
@@ -237,24 +184,25 @@ public class JavaModelTypeTable implements ModelTypeTable {
    * initialization.
    */
   @Override
-  public String getZeroValueAndSaveNicknameFor(TypeRef type) {
+  public TypedValue getZeroValue(TypeRef type) {
     // Don't call importAndGetShortestName; we don't need to import these.
     if (type.isMap()) {
-      return "new HashMap<>()";
+      return TypedValue.create(typeNameConverter.getTypeName("java.util.HashMap"), "new %s<>()");
     }
     if (type.isRepeated()) {
-      return "new ArrayList<>()";
+      return TypedValue.create(typeNameConverter.getTypeName("java.util.ArrayList"), "new %s<>()");
     }
     if (PRIMITIVE_ZERO_VALUE.containsKey(type.getKind())) {
-      return PRIMITIVE_ZERO_VALUE.get(type.getKind());
+      return TypedValue.create(getTypeName(type), PRIMITIVE_ZERO_VALUE.get(type.getKind()));
     }
     if (type.isMessage()) {
-      return getAndSaveNicknameFor(type) + ".newBuilder().build()";
+      return TypedValue.create(getTypeName(type), "%s.newBuilder().build()");
     }
-    return "null";
+    return TypedValue.create(new TypeName(""), "null");
   }
 
-  private TypeName getTypeName(ProtoElement elem) {
+  @Override
+  public TypeName getTypeName(ProtoElement elem) {
     // Construct the full name in Java
     String name = getJavaPackage(elem.getFile());
     if (!elem.getFile().getProto().getOptions().getJavaMultipleFiles()) {

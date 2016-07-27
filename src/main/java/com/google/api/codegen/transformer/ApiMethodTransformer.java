@@ -244,11 +244,10 @@ public class ApiMethodTransformer {
     methodViewBuilder.requestObjectParams(new ArrayList<RequestObjectParamView>());
     methodViewBuilder.pathTemplateChecks(new ArrayList<PathTemplateCheckView>());
 
+    String genericAwareResponseTypeFullName =
+        context.getNamer().getGenericAwareResponseTypeName(context.getMethod().getOutputType());
     String genericAwareResponseType =
-        context
-            .getNamer()
-            .getGenericAwareResponseType(
-                context.getTypeTable(), context.getMethod().getOutputType());
+        context.getTypeTable().getAndSaveNicknameFor(genericAwareResponseTypeFullName);
     methodViewBuilder.callableMethod(
         CallableMethodDetailView.newBuilder()
             .genericAwareResponseType(genericAwareResponseType)
@@ -258,11 +257,10 @@ public class ApiMethodTransformer {
 
   public void setSyncStaticReturnFields(
       MethodTransformerContext context, StaticApiMethodView.Builder methodViewBuilder) {
+    String staticReturnTypeFullName =
+        context.getNamer().getStaticReturnTypeName(context.getMethod(), context.getMethodConfig());
     methodViewBuilder.responseTypeName(
-        context
-            .getNamer()
-            .getStaticReturnTypeName(
-                context.getTypeTable(), context.getMethod(), context.getMethodConfig()));
+        context.getTypeTable().getAndSaveNicknameFor(staticReturnTypeFullName));
     methodViewBuilder.hasReturnValue(
         !ServiceMessages.s_isEmptyType(context.getMethod().getOutputType()));
   }

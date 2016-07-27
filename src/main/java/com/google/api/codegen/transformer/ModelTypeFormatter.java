@@ -30,6 +30,11 @@ public interface ModelTypeFormatter {
   String getFullNameFor(TypeRef type);
 
   /**
+   * Get the full name for the element type of the given type.
+   */
+  String getFullNameForElementType(TypeRef type);
+
+  /**
    * Returns the nickname for the given type (without adding the full name to the import set).
    */
   String getNicknameFor(TypeRef type);

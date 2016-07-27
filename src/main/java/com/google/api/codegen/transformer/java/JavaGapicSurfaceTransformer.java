@@ -28,6 +28,7 @@ import com.google.api.codegen.transformer.ModelTypeTable;
 import com.google.api.codegen.transformer.PageStreamingTransformer;
 import com.google.api.codegen.transformer.PathTemplateTransformer;
 import com.google.api.codegen.transformer.SurfaceTransformerContext;
+import com.google.api.codegen.util.java.JavaTypeTable;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
 import com.google.api.codegen.viewmodel.StaticXApiView;
 import com.google.api.codegen.viewmodel.StaticXSettingsView;
@@ -77,9 +78,11 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   public List<ViewModel> transform(Model model, ApiConfig apiConfig) {
     List<ViewModel> surfaceDocs = new ArrayList<>();
     for (Interface service : new InterfaceView().getElementIterable(model)) {
+      ModelTypeTable modelTypeTable =
+          new ModelTypeTable(new JavaTypeTable(), new JavaModelTypeNameConverter());
       SurfaceTransformerContext context =
           SurfaceTransformerContext.create(
-              service, apiConfig, new JavaModelTypeTable(), new JavaSurfaceNamer());
+              service, apiConfig, modelTypeTable, new JavaSurfaceNamer());
       surfaceDocs.addAll(transform(context));
     }
     return surfaceDocs;

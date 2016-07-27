@@ -232,8 +232,7 @@ public class SurfaceNamer extends NameFormatterMixin {
     return getNotImplementedString("SurfaceNamer.getDynamicReturnTypeName");
   }
 
-  public String getStaticReturnTypeName(
-      ModelTypeTable typeTable, Method method, MethodConfig methodConfig) {
+  public String getStaticReturnTypeName(Method method, MethodConfig methodConfig) {
     return getNotImplementedString("SurfaceNamer.getStaticReturnTypeName");
   }
 
@@ -261,7 +260,7 @@ public class SurfaceNamer extends NameFormatterMixin {
     return getSettingsMemberName(method);
   }
 
-  public String getGenericAwareResponseType(ModelTypeTable typeTable, TypeRef outputType) {
+  public String getGenericAwareResponseTypeName(TypeRef outputType) {
     return getNotImplementedString("SurfaceNamer.getGenericAwareResponseType");
   }
 

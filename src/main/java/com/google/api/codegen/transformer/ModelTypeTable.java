@@ -14,6 +14,7 @@
  */
 package com.google.api.codegen.transformer;
 
+import com.google.api.codegen.util.TypeName;
 import com.google.api.codegen.util.TypeTable;
 import com.google.api.tools.framework.model.TypeRef;
 
@@ -40,6 +41,10 @@ public class ModelTypeTable implements ModelTypeFormatter {
   @Override
   public String getFullNameFor(TypeRef type) {
     return typeFormatter.getFullNameFor(type);
+  }
+
+  public String getFullNameForElementType(TypeRef type) {
+    return typeFormatter.getFullNameForElementType(type);
   }
 
   @Override
@@ -90,6 +95,19 @@ public class ModelTypeTable implements ModelTypeFormatter {
    */
   public String getAndSaveNicknameForElementType(TypeRef type) {
     return typeTable.getAndSaveNicknameFor(typeNameConverter.getTypeNameForElementType(type));
+  }
+
+  public String getAndSaveNicknameForContainer(String containerFullName, String elementFullName) {
+    TypeName containerTypeName = typeTable.getTypeName(containerFullName);
+    TypeName elementTypeName = typeTable.getTypeName(elementFullName);
+    TypeName completeTypeName =
+        new TypeName(
+            containerTypeName.getFullName(),
+            containerTypeName.getNickname(),
+            // FIXME make not java specific
+            "%s<%i>",
+            elementTypeName);
+    return typeTable.getAndSaveNicknameFor(completeTypeName);
   }
 
   /**

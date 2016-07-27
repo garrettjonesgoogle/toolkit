@@ -16,8 +16,10 @@ package com.google.api.codegen.transformer.java;
 
 import com.google.api.codegen.MethodConfig;
 import com.google.api.codegen.ServiceMessages;
+import com.google.api.codegen.transformer.ModelTypeFormatterImpl;
 import com.google.api.codegen.transformer.ModelTypeTable;
 import com.google.api.codegen.transformer.SurfaceNamer;
+import com.google.api.codegen.util.TypeName;
 import com.google.api.codegen.util.java.JavaNameFormatter;
 import com.google.api.codegen.util.java.JavaRenderingUtil;
 import com.google.api.tools.framework.model.Method;
@@ -35,7 +37,7 @@ public class JavaSurfaceNamer extends SurfaceNamer {
    * Standard constructor.
    */
   public JavaSurfaceNamer() {
-    super(new JavaNameFormatter());
+    super(new JavaNameFormatter(), new ModelTypeFormatterImpl(new JavaModelTypeNameConverter()));
   }
 
   @Override
@@ -49,20 +51,19 @@ public class JavaSurfaceNamer extends SurfaceNamer {
   }
 
   @Override
-  public String getStaticReturnTypeName(
-      ModelTypeTable typeTable, Method method, MethodConfig methodConfig) {
+  public String getStaticReturnTypeName(Method method, MethodConfig methodConfig) {
     if (ServiceMessages.s_isEmptyType(method.getOutputType())) {
       return "void";
     }
-    return typeTable.getAndSaveNicknameFor(method.getOutputType());
+    return getModelTypeFormatter().getFullNameFor(method.getOutputType());
   }
 
   @Override
-  public String getGenericAwareResponseType(ModelTypeTable typeTable, TypeRef outputType) {
+  public String getGenericAwareResponseTypeName(TypeRef outputType) {
     if (ServiceMessages.s_isEmptyType(outputType)) {
       return "Void";
     } else {
-      return typeTable.getAndSaveNicknameFor(outputType);
+      return getModelTypeFormatter().getFullNameFor(outputType);
     }
   }
 

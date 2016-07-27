@@ -57,10 +57,15 @@ public class JavaTypeTable implements TypeTable {
           .put("double", "Double")
           .build();
 
+  @Override
+  public TypeTable cloneEmpty() {
+    return new JavaTypeTable();
+  }
+
   public TypeName getTypeName(String fullName) {
     int lastDotIndex = fullName.lastIndexOf('.');
     if (lastDotIndex < 0) {
-      throw new IllegalArgumentException("expected fully qualified name");
+      return new TypeName(fullName, fullName);
     }
     String shortTypeName = fullName.substring(lastDotIndex + 1);
     return new TypeName(fullName, shortTypeName);
