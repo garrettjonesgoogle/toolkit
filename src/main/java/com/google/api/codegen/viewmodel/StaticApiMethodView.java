@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
  * ApiMethodType enum.
  */
 @AutoValue
-public abstract class StaticApiMethodView {
+public abstract class StaticApiMethodView implements ApiMethodView {
   public abstract ApiMethodType type();
 
   public abstract String apiClassName();

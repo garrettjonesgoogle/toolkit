@@ -53,6 +53,69 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
+// AUTO-GENERATED DOCUMENTATION AND SERVICE
+/**
+ * Service Description: This API represents a simple digital library.  It lets you manage Shelf
+ * resources and Book resources in the library. It defines the following
+ * resource model:
+ *
+ * - The API has a collection of [Shelf][google.example.library.v1.Shelf]
+ *   resources, named ``bookShelves/&ast;``
+ *
+ * - Each Shelf has a collection of [Book][google.example.library.v1.Book]
+ *   resources, named `bookShelves/&ast;/books/&ast;`
+ *
+ * Check out [cloud docs!](/library/example/link).
+ * This is [not a cloud link](http://www.google.com).
+ *
+ * <p>This class provides the ability to make remote calls to the backing service through method
+ * calls that map to API methods. Sample code to get started:
+ *
+ * <pre>
+ * <code>
+ * try (LibraryServiceApi libraryServiceApi = LibraryServiceApi.createWithDefaults()) {
+ *   Shelf shelf = Shelf.newBuilder().build();
+ *   Shelf response = libraryServiceApi.createShelf(shelf);
+ * }
+ * </code>
+ * </pre>
+ *
+ * <p>Note: close() needs to be called on the libraryServiceApi object to clean up resources such
+ * as threads. In the example above, try-with-resources is used, which automatically calls
+ * close().
+ *
+ * <p>The surface of this class includes several types of Java methods for each of the API's methods:
+ *
+ * <ol>
+ * <li> A "flattened" method. With this type of method, the fields of the request type have been
+ * converted into function parameters. It may be the case that not all fields are available
+ * as parameters, and not every API method will have a flattened method entry point.
+ * <li> A "request object" method. This type of method only takes one parameter, a request
+ * object, which must be constructed before the call. Not every API method will have a request
+ * object method.
+ * <li> A "callable" method. This type of method takes no parameters and returns an immutable
+ * ApiCallable object, which can be used to initiate calls to the service.
+ * </ol>
+ *
+ * <p>See the individual methods for example code.
+ *
+ * <p>Many parameters require resource names to be formatted in a particular way. To assist
+ * with these names, this class includes a format method for each type of name, and additionally
+ * a parse method to extract the individual identifiers contained within names that are
+ * returned.
+ *
+ * <p>This class can be customized by passing in a custom instance of LibraryServiceSettings to
+ * create(). For example:
+ *
+ * <pre>
+ * <code>
+ * LibraryServiceSettings libraryServiceSettings = LibraryServiceSettings.defaultBuilder()
+ *     .provideChannelWith(myCredentials)
+ *     .build();
+ * LibraryServiceApi libraryServiceApi = LibraryServiceApi.create(libraryServiceSettings);
+ * </code>
+ * </pre>
+ */
 @javax.annotation.Generated("by GAPIC")
 public class LibraryServiceApi implements AutoCloseable {
   private final LibraryServiceSettings settings;

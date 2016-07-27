@@ -25,6 +25,8 @@ public abstract class StaticXApiView implements ViewModel {
 
   public abstract String packageName();
 
+  public abstract ServiceDocView doc();
+
   public abstract String name();
 
   public abstract String settingsClassName();
@@ -57,6 +59,8 @@ public abstract class StaticXApiView implements ViewModel {
     public abstract Builder templateFileName(String val);
 
     public abstract Builder packageName(String val);
+
+    public abstract Builder doc(ServiceDocView val);
 
     public abstract Builder name(String val);
 

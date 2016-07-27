@@ -27,8 +27,11 @@ import com.google.api.codegen.transformer.ModelToViewTransformer;
 import com.google.api.codegen.transformer.ModelTypeTable;
 import com.google.api.codegen.transformer.PageStreamingTransformer;
 import com.google.api.codegen.transformer.PathTemplateTransformer;
+import com.google.api.codegen.transformer.ServiceTransformer;
 import com.google.api.codegen.transformer.SurfaceTransformerContext;
 import com.google.api.codegen.util.java.JavaTypeTable;
+import com.google.api.codegen.viewmodel.ApiMethodType;
+import com.google.api.codegen.viewmodel.ApiMethodView;
 import com.google.api.codegen.viewmodel.RetryCodesDefinitionView;
 import com.google.api.codegen.viewmodel.RetryParamsDefinitionView;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
@@ -55,6 +58,7 @@ import java.util.Map.Entry;
  */
 public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   private GapicCodePathMapper pathMapper;
+  private ServiceTransformer serviceTransformer;
   private PathTemplateTransformer pathTemplateTransformer;
   private ApiCallableTransformer apiCallableTransformer;
   private ApiMethodTransformer apiMethodTransformer;
@@ -69,6 +73,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
    */
   public JavaGapicSurfaceTransformer(GapicCodePathMapper pathMapper) {
     this.pathMapper = pathMapper;
+    this.serviceTransformer = new ServiceTransformer();
     this.pathTemplateTransformer = new PathTemplateTransformer();
     this.apiCallableTransformer = new ApiCallableTransformer();
     this.apiMethodTransformer = new ApiMethodTransformer();
@@ -109,7 +114,19 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   private StaticXApiView generateXApi(SurfaceTransformerContext context) {
     addXApiImports(context);
 
+    List<StaticApiMethodView> methods = generateApiMethods(context);
+
     StaticXApiView.Builder xapiClass = StaticXApiView.newBuilder();
+
+    ApiMethodView exampleApiMethod = null;
+    for (StaticApiMethodView method : methods) {
+      if (method.type().equals(ApiMethodType.FlattenedMethod)) {
+        exampleApiMethod = method;
+        break;
+      }
+    }
+    xapiClass.doc(serviceTransformer.generateServiceDoc(context, exampleApiMethod));
+
     xapiClass.templateFileName(XAPI_TEMPLATE_FILENAME);
     xapiClass.packageName(context.getApiConfig().getPackageName());
     String name = context.getNamer().getApiWrapperClassName(context.getInterface());
@@ -121,7 +138,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
         pathTemplateTransformer.generateFormatResourceFunctions(context));
     xapiClass.parseResourceFunctions(
         pathTemplateTransformer.generateParseResourceFunctions(context));
-    xapiClass.apiMethods(generateApiMethods(context));
+    xapiClass.apiMethods(methods);
 
     // must be done as the last step to catch all imports
     xapiClass.imports(context.getTypeTable().getImports());

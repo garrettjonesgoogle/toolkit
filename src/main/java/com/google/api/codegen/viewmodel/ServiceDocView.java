@@ -27,6 +27,14 @@ public abstract class ServiceDocView {
 
   public abstract ApiMethodView exampleApiMethod();
 
+  public abstract String apiVarName();
+
+  public abstract String apiClassName();
+
+  public abstract String settingsVarName();
+
+  public abstract String settingsClassName();
+
   public static Builder newBuilder() {
     return new AutoValue_ServiceDocView.Builder();
   }
@@ -38,6 +46,14 @@ public abstract class ServiceDocView {
     public abstract Builder remainingLines(List<String> val);
 
     public abstract Builder exampleApiMethod(ApiMethodView val);
+
+    public abstract Builder apiVarName(String val);
+
+    public abstract Builder apiClassName(String val);
+
+    public abstract Builder settingsVarName(String val);
+
+    public abstract Builder settingsClassName(String val);
 
     public abstract ServiceDocView build();
   }

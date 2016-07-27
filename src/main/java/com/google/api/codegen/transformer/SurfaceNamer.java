@@ -71,6 +71,10 @@ public class SurfaceNamer extends NameFormatterMixin {
     return className(Name.upperCamel(interfaze.getSimpleName(), "Settings"));
   }
 
+  public String getApiSettingsVariableName(Interface interfaze) {
+    return varName(Name.upperCamel(interfaze.getSimpleName(), "Settings"));
+  }
+
   public String getVariableName(Name identifier, InitValueConfig initValueConfig) {
     if (initValueConfig == null || !initValueConfig.hasFormattingConfig()) {
       return varName(identifier);
