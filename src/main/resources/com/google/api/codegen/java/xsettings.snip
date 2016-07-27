@@ -11,7 +11,7 @@
     {@members(xsettingsClass)}
     {@constructors(xsettingsClass)}
     {@descriptors(xsettingsClass)}
-    # {@innerBuilderClass(xsettingsClass)}
+    {@innerBuilderClass(xsettingsClass)}
   }
 @end
 
@@ -256,13 +256,13 @@
   public static class Builder extends ServiceApiSettings.Builder {
     private final ImmutableList<ApiCallSettings.Builder> methodSettingsBuilders;
 
-    # {@builderMembers(xsettingsClass)}
+    {@builderMembers(xsettingsClass)}
 
-    # {@builderConstants(xsettingsClass)}
+    {@builderConstants(xsettingsClass)}
 
-    # {@builderConstructors(xsettingsClass)}
+    {@builderConstructors(xsettingsClass)}
 
-    # {@builderMethods(xsettingsClass)}
+    {@builderMethods(xsettingsClass)}
   }
 @end
 
@@ -270,36 +270,207 @@
   @join settings : xsettingsClass.callSettings
     @switch settings.type.toString
     @case "SimpleApiCallable"
-      private SimpleCallSettings.Builder<{@desc.requestTypeName}, \
-          {@desc.responseTypeName}> {@settings.memberName};
+      private SimpleCallSettings.Builder<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.memberName};
     @case "PagedApiCallable"
-      private PageStreamingCallSettings.Builder<{@desc.requestTypeName}, \
-          {@desc.responseTypeName}, {@desc.resourceTypeName}> {@settings.memberName};
+      private PageStreamingCallSettings.Builder<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}, {@settings.resourceTypeName}> {@settings.memberName};
     @case "BundlingApiCallable"
-      private BundlingCallSettings.Builder<{@desc.requestTypeName}, \
-          {@desc.responseTypeName}> {@settings.memberName};
+      private BundlingCallSettings.Builder<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.memberName};
     @default
       $unhandledCase: {@settings.type.toString}$
     @end
   @end
-  # old
-  @join method : service.getMethods
-      @if {@isPageStreaming}
-        @let pageStreaming = methodConfig.getPageStreaming(), \
-             resourceTypeName = context.basicTypeNameBoxed(pageStreaming.getResourcesField().getType()), \
-             dummy = context.addImport("com.google.api.gax.grpc.PageStreamingCallSettings")
-          private PageStreamingCallSettings.Builder<{@inTypeName}, {@outTypeName}, {@resourceTypeName}>
-              {@methodName}Settings;
-        @end
-      @else
-        @if {@isBundling}
-          @let bundling = methodConfig.getBundling(), \
-               dummy = context.addImport("com.google.api.gax.grpc.BundlingCallSettings")
-            private BundlingCallSettings.Builder<{@inTypeName}, {@outTypeName}> {@methodName}Settings;
-          @end
-        @else
-          private SimpleCallSettings.Builder<{@inTypeName}, {@outTypeName}> {@methodName}Settings;
-        @end
-      @end
+@end
+
+@private builderConstants(xsettingsClass)
+  private static final ImmutableMap<String, ImmutableSet<Status.Code>> RETRYABLE_CODE_DEFINITIONS;
+
+  static {
+    ImmutableMap.Builder<String, ImmutableSet<Status.Code>> definitions = ImmutableMap.builder();
+    @join retryCodesDef : xsettingsClass.retryCodesDefinitions
+      definitions.put(
+          "{@retryCodesDef.key}",
+          Sets.immutableEnumSet(Lists.<Status.Code>newArrayList({@statusCodes(retryCodesDef.codes)})));
+    @end
+    RETRYABLE_CODE_DEFINITIONS = definitions.build();
+  }
+
+  private static final ImmutableMap<String, RetrySettings.Builder> RETRY_PARAM_DEFINITIONS;
+
+  static {
+    ImmutableMap.Builder<String, RetrySettings.Builder> definitions = ImmutableMap.builder();
+    RetrySettings.Builder settingsBuilder = null;
+    @join retryParamsDef : xsettingsClass.retryParamsDefinitions
+      settingsBuilder = RetrySettings.newBuilder()
+          .setInitialRetryDelay(Duration.millis({@retryParamsDef.initialRetryDelay.getMillis}L))
+          .setRetryDelayMultiplier({@retryParamsDef.retryDelayMultiplier})
+          .setMaxRetryDelay(Duration.millis({@retryParamsDef.maxRetryDelay.getMillis}L))
+          .setInitialRpcTimeout(Duration.millis({@retryParamsDef.initialRpcTimeout.getMillis}L))
+          .setRpcTimeoutMultiplier({@retryParamsDef.rpcTimeoutMultiplier})
+          .setMaxRpcTimeout(Duration.millis({@retryParamsDef.maxRpcTimeout.getMillis}L))
+          .setTotalTimeout(Duration.millis({@retryParamsDef.totalTimeout.getMillis}L));
+      definitions.put("{@retryParamsDef.key}", settingsBuilder);
+    @end
+    RETRY_PARAM_DEFINITIONS = definitions.build();
+  }
+@end
+
+@private statusCodes(codes)
+  @join code : codes on ", "
+    Status.Code.{@code}
   @end
+@end
+
+@private builderConstructors(xsettingsClass)
+  private Builder() {
+    super(DEFAULT_CONNECTION_SETTINGS);
+
+    @join settings : xsettingsClass.callSettings
+      @switch settings.type.toString
+      @case "SimpleApiCallable"
+        {@settings.memberName} = SimpleCallSettings.newBuilder({@settings.grpcTypeName}.{@settings.grpcMethodConstant});
+      @case "PagedApiCallable"
+        {@settings.memberName} = PageStreamingCallSettings.newBuilder(
+            {@settings.grpcTypeName}.{@settings.grpcMethodConstant},
+            {@settings.pageStreamingDescriptorName});
+      @case "BundlingApiCallable"
+        {@settings.memberName} = BundlingCallSettings.newBuilder(
+            {@settings.grpcTypeName}.{@settings.grpcMethodConstant},
+            {@settings.bundlingDescriptorName})
+                .setBundlingSettingsBuilder(BundlingSettings.newBuilder());
+      @default
+        $unhandledCase: {@settings.type.toString}$
+      @end
+      {@BREAK}
+    @end
+    methodSettingsBuilders = ImmutableList.<ApiCallSettings.Builder>of(
+        @join settings : xsettingsClass.callSettings vertical on ",".add(BREAK)
+          {@settings.memberName}
+        @end
+    );
+  }
+
+  private static Builder createDefault() {
+    Builder builder = new Builder();
+    @join settings : xsettingsClass.callSettings
+      {@""}
+      @switch settings.type.toString
+      @case "SimpleApiCallable"
+      @case "PagedApiCallable"
+      @case "BundlingApiCallable"
+        builder.{@settings.fnGetterName}().getBundlingSettingsBuilder()
+            .setElementCountThreshold({@settings.bundlingConfig.elementCountThreshold})
+            .setElementCountLimit({@settings.bundlingConfig.elementCountLimit})
+            .setRequestByteThreshold({@settings.bundlingConfig.requestByteThreshold})
+            .setRequestByteLimit({@settings.bundlingConfig.requestByteLimit})
+            .setDelayThreshold(Duration.millis({@settings.bundlingConfig.delayThresholdMillis}))
+            .setBlockingCallCountThreshold(1);
+      @default
+        $unhandledCase: {@settings.type.toString}$
+      @end
+      builder.{@settings.fnGetterName}()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("{@settings.retryCodesName}"))
+          .setRetrySettingsBuilder(RETRY_PARAM_DEFINITIONS.get("{@settings.retryParamsName}"));
+    @end
+
+    return builder;
+  }
+
+  private Builder({@xsettingsClass.name} settings) {
+    super(settings);
+
+    @join settings : xsettingsClass.callSettings
+      {@settings.memberName} = settings.{@settings.memberName}.toBuilder();
+    @end
+
+    methodSettingsBuilders = ImmutableList.<ApiCallSettings.Builder>of(
+        @join settings : xsettingsClass.callSettings vertical on ",".add(BREAK)
+          {@settings.memberName}
+        @end
+    );
+  }
+@end
+
+@private builderMethods(xsettingsClass)
+  @@Override
+  protected ConnectionSettings getDefaultConnectionSettings() {
+    return DEFAULT_CONNECTION_SETTINGS;
+  }
+  @@Override
+  public Builder provideExecutorWith(ScheduledExecutorService executor, boolean shouldAutoClose) {
+    super.provideExecutorWith(executor, shouldAutoClose);
+    return this;
+  }
+  @@Override
+  public Builder provideChannelWith(ManagedChannel channel, boolean shouldAutoClose) {
+    super.provideChannelWith(channel, shouldAutoClose);
+    return this;
+  }
+  @@Override
+  public Builder provideChannelWith(ConnectionSettings settings) {
+    super.provideChannelWith(settings);
+    return this;
+  }
+  @@Override
+  public Builder provideChannelWith(Credentials credentials) {
+    super.provideChannelWith(credentials);
+    return this;
+  }
+  @@Override
+  public Builder provideChannelWith(List<String> scopes) {
+    super.provideChannelWith(scopes);
+    return this;
+  }
+  @@Override
+  public Builder setGeneratorHeader(String name, String version) {
+    super.setGeneratorHeader(name, version);
+    return this;
+  }
+  @@Override
+  public Builder setClientLibHeader(String name, String version) {
+    super.setClientLibHeader(name, version);
+    return this;
+  }
+
+  /**
+   * Applies the given settings to all of the API methods in this service. Only
+   * values that are non-null will be applied, so this method is not capable
+   * of un-setting any values.
+   */
+  public Builder applyToAllApiMethods(ApiCallSettings.Builder apiCallSettings) throws Exception {
+    super.applyToAllApiMethods(methodSettingsBuilders, apiCallSettings);
+    return this;
+  }
+
+  @join settings : xsettingsClass.callSettings
+    /**
+     * Returns the builder for the settings used for calls to {@settings.methodName}.
+     */
+    @switch settings.type.toString
+    @case "SimpleApiCallable"
+      public SimpleCallSettings.Builder<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.fnGetterName}() {
+        return {@settings.memberName};
+      }
+    @case "PagedApiCallable"
+      public PageStreamingCallSettings.Builder<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}, {@settings.resourceTypeName}> {@settings.fnGetterName}() {
+        return {@settings.memberName};
+      }
+    @case "BundlingApiCallable"
+      public BundlingCallSettings.Builder<{@settings.requestTypeName}, \
+          {@settings.responseTypeName}> {@settings.fnGetterName}() {
+        return {@settings.memberName};
+      }
+    @default
+      $unhandledCase: {@settings.type.toString}$
+    @end
+    {@""}
+  @end
+  @@Override
+  public {@xsettingsClass.name} build() throws IOException {
+    return new {@xsettingsClass.name}(this);
+  }
 @end

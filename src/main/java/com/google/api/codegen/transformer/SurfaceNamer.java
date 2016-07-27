@@ -182,6 +182,16 @@ public class SurfaceNamer extends NameFormatterMixin {
     return qualifiedName(namePath.withHead(className));
   }
 
+  public String getGrpcContainerTypeName(Interface service) {
+    NamePath namePath = NamePath.dotted(service.getFullName());
+    String className = className(Name.upperCamel(namePath.getHead(), "Grpc"));
+    return qualifiedName(namePath.withHead(className));
+  }
+
+  public String getGrpcMethodConstant(Method method) {
+    return inittedConstantName(Name.from("method").join(Name.upperCamel(method.getSimpleName())));
+  }
+
   public String getApiMethodName(Method method) {
     return methodName(Name.upperCamel(method.getSimpleName()));
   }
@@ -270,5 +280,13 @@ public class SurfaceNamer extends NameFormatterMixin {
 
   public String getAndSavePagedResponseTypeName(ModelTypeTable typeTable, TypeRef resourceType) {
     return getNotImplementedString("SurfaceNamer.getAndSavePagedResponseTypeName");
+  }
+
+  public String getPageStreamingCallSettingsTypeName() {
+    return getNotImplementedString("SurfaceNamer.getPageStreamingCallSettingsTypeName");
+  }
+
+  public String getBundlingCallSettingsTypeName() {
+    return getNotImplementedString("SurfaceNamer.getBundlingCallSettingsTypeName");
   }
 }

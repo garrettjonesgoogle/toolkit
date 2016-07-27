@@ -73,4 +73,14 @@ public class JavaSurfaceNamer extends SurfaceNamer {
     return typeTable.getAndSaveNicknameForContainer(
         "com.google.api.gax.core.PageAccessor", resourceTypeName);
   }
+
+  @Override
+  public String getPageStreamingCallSettingsTypeName() {
+    return "com.google.api.gax.grpc.PageStreamingCallSettings";
+  }
+
+  @Override
+  public String getBundlingCallSettingsTypeName() {
+    return "com.google.api.gax.grpc.BundlingCallSettings";
+  }
 }

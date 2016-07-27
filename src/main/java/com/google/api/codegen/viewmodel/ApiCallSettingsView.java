@@ -14,8 +14,9 @@
  */
 package com.google.api.codegen.viewmodel;
 
-import com.google.api.codegen.viewmodel.ApiCallableView.Builder;
 import com.google.auto.value.AutoValue;
+
+import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class ApiCallSettingsView {
@@ -32,6 +33,21 @@ public abstract class ApiCallSettingsView {
   public abstract String memberName();
 
   public abstract String fnGetterName();
+
+  public abstract String grpcTypeName();
+
+  public abstract String grpcMethodConstant();
+
+  public abstract String pageStreamingDescriptorName();
+
+  public abstract String bundlingDescriptorName();
+
+  public abstract String retryCodesName();
+
+  public abstract String retryParamsName();
+
+  @Nullable
+  public abstract BundlingConfigView bundlingConfig();
 
   public static Builder newBuilder() {
     return new AutoValue_ApiCallSettingsView.Builder();
@@ -52,6 +68,20 @@ public abstract class ApiCallSettingsView {
     public abstract Builder memberName(String val);
 
     public abstract Builder fnGetterName(String val);
+
+    public abstract Builder grpcTypeName(String val);
+
+    public abstract Builder grpcMethodConstant(String val);
+
+    public abstract Builder pageStreamingDescriptorName(String val);
+
+    public abstract Builder bundlingDescriptorName(String val);
+
+    public abstract Builder bundlingConfig(BundlingConfigView val);
+
+    public abstract Builder retryCodesName(String val);
+
+    public abstract Builder retryParamsName(String val);
 
     public abstract ApiCallSettingsView build();
   }

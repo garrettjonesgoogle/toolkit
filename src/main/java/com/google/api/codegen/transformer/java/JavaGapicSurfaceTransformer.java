@@ -29,19 +29,26 @@ import com.google.api.codegen.transformer.PageStreamingTransformer;
 import com.google.api.codegen.transformer.PathTemplateTransformer;
 import com.google.api.codegen.transformer.SurfaceTransformerContext;
 import com.google.api.codegen.util.java.JavaTypeTable;
+import com.google.api.codegen.viewmodel.RetryCodesDefinitionView;
+import com.google.api.codegen.viewmodel.RetryParamsDefinitionView;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
 import com.google.api.codegen.viewmodel.StaticXApiView;
 import com.google.api.codegen.viewmodel.StaticXSettingsView;
 import com.google.api.codegen.viewmodel.ViewModel;
+import com.google.api.gax.core.RetrySettings;
 import com.google.api.tools.framework.model.Field;
 import com.google.api.tools.framework.model.Interface;
 import com.google.api.tools.framework.model.Method;
 import com.google.api.tools.framework.model.Model;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import io.grpc.Status.Code;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * The ModelToViewTransformer to transform a Model into the standard GAPIC surface in Java.
@@ -141,6 +148,8 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     xsettingsClass.pageStreamingDescriptors(
         pageStreamingTransformer.generateDescriptorClasses(context));
     xsettingsClass.bundlingDescriptors(bundlingTransformer.generateDescriptorClasses(context));
+    xsettingsClass.retryCodesDefinitions(generateRetryCodesDefinitions(context));
+    xsettingsClass.retryParamsDefinitions(generateRetryParamsDefinitions(context));
 
     // must be done as the last step to catch all imports
     xsettingsClass.imports(context.getTypeTable().getImports());
@@ -213,5 +222,43 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     }
 
     return apiMethods;
+  }
+
+  private List<RetryCodesDefinitionView> generateRetryCodesDefinitions(
+      SurfaceTransformerContext context) {
+    List<RetryCodesDefinitionView> definitions = new ArrayList<>();
+
+    for (Entry<String, ImmutableSet<Code>> retryCodesDef :
+        context.getInterfaceConfig().getRetryCodesDefinition().entrySet()) {
+      definitions.add(
+          RetryCodesDefinitionView.newBuilder()
+              .key(retryCodesDef.getKey())
+              .codes(retryCodesDef.getValue())
+              .build());
+    }
+
+    return definitions;
+  }
+
+  private List<RetryParamsDefinitionView> generateRetryParamsDefinitions(
+      SurfaceTransformerContext context) {
+    List<RetryParamsDefinitionView> definitions = new ArrayList<>();
+
+    for (Entry<String, RetrySettings> retryCodesDef :
+        context.getInterfaceConfig().getRetrySettingsDefinition().entrySet()) {
+      RetrySettings settings = retryCodesDef.getValue();
+      RetryParamsDefinitionView.Builder params = RetryParamsDefinitionView.newBuilder();
+      params.key(retryCodesDef.getKey());
+      params.initialRetryDelay(settings.getInitialRetryDelay());
+      params.retryDelayMultiplier(settings.getRetryDelayMultiplier());
+      params.maxRetryDelay(settings.getMaxRetryDelay());
+      params.initialRpcTimeout(settings.getInitialRpcTimeout());
+      params.rpcTimeoutMultiplier(settings.getRpcTimeoutMultiplier());
+      params.maxRpcTimeout(settings.getMaxRpcTimeout());
+      params.totalTimeout(settings.getTotalTimeout());
+      definitions.add(params.build());
+    }
+
+    return definitions;
   }
 }

@@ -39,6 +39,10 @@ public abstract class StaticXSettingsView implements ViewModel {
 
   public abstract List<BundlingDescriptorClassView> bundlingDescriptors();
 
+  public abstract List<RetryCodesDefinitionView> retryCodesDefinitions();
+
+  public abstract List<RetryParamsDefinitionView> retryParamsDefinitions();
+
   public abstract List<String> imports();
 
   public abstract String outputPath();
@@ -72,6 +76,10 @@ public abstract class StaticXSettingsView implements ViewModel {
         List<PageStreamingDescriptorClassView> generateDescriptorClasses);
 
     public abstract Builder bundlingDescriptors(List<BundlingDescriptorClassView> val);
+
+    public abstract Builder retryCodesDefinitions(List<RetryCodesDefinitionView> val);
+
+    public abstract Builder retryParamsDefinitions(List<RetryParamsDefinitionView> val);
 
     public abstract Builder imports(List<String> val);
 

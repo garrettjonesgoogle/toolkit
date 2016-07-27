@@ -14,11 +14,13 @@
  */
 package com.google.api.codegen.transformer;
 
+import com.google.api.codegen.BundlingConfig;
 import com.google.api.codegen.MethodConfig;
 import com.google.api.codegen.PageStreamingConfig;
 import com.google.api.codegen.viewmodel.ApiCallSettingsView;
 import com.google.api.codegen.viewmodel.ApiCallableType;
 import com.google.api.codegen.viewmodel.ApiCallableView;
+import com.google.api.codegen.viewmodel.BundlingConfigView;
 import com.google.api.tools.framework.model.Method;
 import com.google.api.tools.framework.model.TypeRef;
 
@@ -95,37 +97,63 @@ public class ApiCallableTransformer {
   }
 
   private List<ApiCallSettingsView> generateApiCallableSettings(MethodTransformerContext context) {
+    SurfaceNamer namer = context.getNamer();
     ModelTypeTable typeTable = context.getTypeTable();
     Method method = context.getMethod();
     MethodConfig methodConfig = context.getMethodConfig();
 
     ApiCallSettingsView.Builder settings = ApiCallSettingsView.newBuilder();
 
-    settings.methodName(context.getNamer().getApiMethodName(method));
+    settings.methodName(namer.getApiMethodName(method));
     settings.requestTypeName(typeTable.getAndSaveNicknameFor(method.getInputType()));
     settings.responseTypeName(typeTable.getAndSaveNicknameFor(method.getOutputType()));
+    settings.grpcTypeName(
+        typeTable.getAndSaveNicknameFor(namer.getGrpcContainerTypeName(context.getInterface())));
+    settings.grpcMethodConstant(namer.getGrpcMethodConstant(method));
+    settings.retryCodesName(methodConfig.getRetryCodesConfigName());
+    settings.retryParamsName(methodConfig.getRetrySettingsConfigName());
+
+    String notImplementedPrefix = "ApiCallableTransformer.generateApiCallableSettings - ";
+    settings.resourceTypeName(
+        namer.getNotImplementedString(notImplementedPrefix + "resourceTypeName"));
+    settings.pageStreamingDescriptorName(
+        namer.getNotImplementedString(notImplementedPrefix + "pageStreamingDescriptorName"));
+    settings.bundlingDescriptorName(
+        namer.getNotImplementedString(notImplementedPrefix + "bundlingDescriptorName"));
 
     if (methodConfig.isPageStreaming()) {
+      typeTable.saveNicknameFor(namer.getPageStreamingCallSettingsTypeName());
       settings.type(ApiCallableType.PagedApiCallable);
       TypeRef resourceType = methodConfig.getPageStreaming().getResourcesField().getType();
-      settings.resourceTypeName(
-          context.getTypeTable().getAndSaveNicknameForElementType(resourceType));
+      settings.resourceTypeName(typeTable.getAndSaveNicknameForElementType(resourceType));
+      settings.pageStreamingDescriptorName(namer.getPageStreamingDescriptorConstName(method));
     } else {
-      settings.resourceTypeName(
-          context
-              .getNamer()
-              .getNotImplementedString(
-                  "ApiCallableTransformer.generateApiCallableSettings - resourceTypeName"));
       if (methodConfig.isBundling()) {
+        typeTable.saveNicknameFor(namer.getBundlingCallSettingsTypeName());
         settings.type(ApiCallableType.BundlingApiCallable);
+        settings.bundlingDescriptorName(namer.getBundlingDescriptorConstName(method));
+        settings.bundlingConfig(generateBundlingConfig(context));
       } else {
         settings.type(ApiCallableType.SimpleApiCallable);
       }
     }
 
-    settings.memberName(context.getNamer().getSettingsMemberName(method));
-    settings.fnGetterName(context.getNamer().getSettingsMemberName(method));
+    settings.memberName(namer.getSettingsMemberName(method));
+    settings.fnGetterName(namer.getSettingsMemberName(method));
 
     return Arrays.asList(settings.build());
+  }
+
+  private BundlingConfigView generateBundlingConfig(MethodTransformerContext context) {
+    BundlingConfig bundlingConfig = context.getMethodConfig().getBundling();
+    BundlingConfigView.Builder bundlingConfigView = BundlingConfigView.newBuilder();
+
+    bundlingConfigView.elementCountThreshold(bundlingConfig.getElementCountThreshold());
+    bundlingConfigView.elementCountLimit(bundlingConfig.getElementCountLimit());
+    bundlingConfigView.requestByteThreshold(bundlingConfig.getRequestByteThreshold());
+    bundlingConfigView.requestByteLimit(bundlingConfig.getRequestByteLimit());
+    bundlingConfigView.delayThresholdMillis(bundlingConfig.getDelayThresholdMillis());
+
+    return bundlingConfigView.build();
   }
 }
