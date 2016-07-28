@@ -19,6 +19,7 @@ import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,11 +43,19 @@ public class JavaRenderingUtil {
    */
   public static List<String> getDocLines(String text) {
     // TODO: convert markdown to javadoc
+    // https://github.com/googleapis/toolkit/issues/331
     List<String> result = new ArrayList<>();
     text = JAVADOC_ESCAPER.escape(text);
     for (String line : Splitter.on(String.format("%n")).split(text)) {
       result.add(line);
     }
     return result;
+  }
+
+  public List<String> getMultilineHeading(String heading) {
+    final char[] array = new char[heading.length()];
+    Arrays.fill(array, '=');
+    String eqsString = new String(array);
+    return Arrays.asList(eqsString, heading, eqsString);
   }
 }

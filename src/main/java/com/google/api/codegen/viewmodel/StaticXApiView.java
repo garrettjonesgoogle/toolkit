@@ -21,6 +21,7 @@ import java.util.List;
 
 @AutoValue
 public abstract class StaticXApiView implements ViewModel {
+  @Override
   public abstract String templateFileName();
 
   public abstract String packageName();
@@ -43,6 +44,7 @@ public abstract class StaticXApiView implements ViewModel {
 
   public abstract List<String> imports();
 
+  @Override
   public abstract String outputPath();
 
   @Override

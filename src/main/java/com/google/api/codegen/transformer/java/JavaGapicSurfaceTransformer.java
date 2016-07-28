@@ -28,12 +28,15 @@ import com.google.api.codegen.transformer.ModelTypeTable;
 import com.google.api.codegen.transformer.PageStreamingTransformer;
 import com.google.api.codegen.transformer.PathTemplateTransformer;
 import com.google.api.codegen.transformer.ServiceTransformer;
+import com.google.api.codegen.transformer.SurfaceNamer;
 import com.google.api.codegen.transformer.SurfaceTransformerContext;
 import com.google.api.codegen.util.java.JavaTypeTable;
 import com.google.api.codegen.viewmodel.ApiMethodType;
 import com.google.api.codegen.viewmodel.ApiMethodView;
+import com.google.api.codegen.viewmodel.PackageInfoView;
 import com.google.api.codegen.viewmodel.RetryCodesDefinitionView;
 import com.google.api.codegen.viewmodel.RetryParamsDefinitionView;
+import com.google.api.codegen.viewmodel.ServiceDocView;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
 import com.google.api.codegen.viewmodel.StaticXApiView;
 import com.google.api.codegen.viewmodel.StaticXSettingsView;
@@ -67,6 +70,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
 
   private static final String XAPI_TEMPLATE_FILENAME = "java/xapi.snip";
   private static final String XSETTINGS_TEMPLATE_FILENAME = "java/xsettings.snip";
+  private static final String PACKAGE_INFO_TEMPLATE_FILENAME = "java/xpackage-info.snip";
 
   /**
    * Standard constructor.
@@ -83,32 +87,38 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
 
   @Override
   public List<String> getTemplateFileNames() {
-    return Arrays.asList(XAPI_TEMPLATE_FILENAME, XSETTINGS_TEMPLATE_FILENAME);
+    return Arrays.asList(
+        XAPI_TEMPLATE_FILENAME, XSETTINGS_TEMPLATE_FILENAME, PACKAGE_INFO_TEMPLATE_FILENAME);
   }
 
   @Override
   public List<ViewModel> transform(Model model, ApiConfig apiConfig) {
     List<ViewModel> surfaceDocs = new ArrayList<>();
+    SurfaceNamer namer = new JavaSurfaceNamer();
+
+    List<ServiceDocView> serviceDocs = new ArrayList<>();
     for (Interface service : new InterfaceView().getElementIterable(model)) {
-      ModelTypeTable modelTypeTable =
-          new ModelTypeTable(new JavaTypeTable(), new JavaModelTypeNameConverter());
       SurfaceTransformerContext context =
-          SurfaceTransformerContext.create(
-              service, apiConfig, modelTypeTable, new JavaSurfaceNamer());
-      surfaceDocs.addAll(transform(context));
+          SurfaceTransformerContext.create(service, apiConfig, createTypeTable(), namer);
+      StaticXApiView xapi = generateXApi(context);
+      surfaceDocs.add(xapi);
+
+      serviceDocs.add(xapi.doc());
+
+      context = SurfaceTransformerContext.create(service, apiConfig, createTypeTable(), namer);
+      StaticXSettingsView xsettings = generateXSettings(context);
+      surfaceDocs.add(xsettings);
     }
+
+    PackageInfoView packageInfo =
+        generatePackageInfo(model, apiConfig, createTypeTable(), namer, serviceDocs);
+    surfaceDocs.add(packageInfo);
+
     return surfaceDocs;
   }
 
-  public List<ViewModel> transform(SurfaceTransformerContext context) {
-    List<ViewModel> surfaceData = new ArrayList<>();
-
-    surfaceData.add(generateXApi(context));
-
-    context = context.withNewTypeTable();
-    surfaceData.add(generateXSettings(context));
-
-    return surfaceData;
+  private ModelTypeTable createTypeTable() {
+    return new ModelTypeTable(new JavaTypeTable(), new JavaModelTypeNameConverter());
   }
 
   private StaticXApiView generateXApi(SurfaceTransformerContext context) {
@@ -118,13 +128,7 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
 
     StaticXApiView.Builder xapiClass = StaticXApiView.newBuilder();
 
-    ApiMethodView exampleApiMethod = null;
-    for (StaticApiMethodView method : methods) {
-      if (method.type().equals(ApiMethodType.FlattenedMethod)) {
-        exampleApiMethod = method;
-        break;
-      }
-    }
+    ApiMethodView exampleApiMethod = getExampleApiMethod(methods);
     xapiClass.doc(serviceTransformer.generateServiceDoc(context, exampleApiMethod));
 
     xapiClass.templateFileName(XAPI_TEMPLATE_FILENAME);
@@ -147,6 +151,20 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     xapiClass.outputPath(outputPath + "/" + name + ".java");
 
     return xapiClass.build();
+  }
+
+  private ApiMethodView getExampleApiMethod(List<StaticApiMethodView> methods) {
+    ApiMethodView exampleApiMethod = null;
+    for (StaticApiMethodView method : methods) {
+      if (method.type().equals(ApiMethodType.FlattenedMethod)) {
+        exampleApiMethod = method;
+        break;
+      }
+    }
+    if (exampleApiMethod == null) {
+      throw new RuntimeException("Could not find flattened method to use as an example method");
+    }
+    return exampleApiMethod;
   }
 
   private StaticXSettingsView generateXSettings(SurfaceTransformerContext context) {
@@ -175,6 +193,27 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     xsettingsClass.outputPath(outputPath + "/" + name + ".java");
 
     return xsettingsClass.build();
+  }
+
+  private PackageInfoView generatePackageInfo(
+      Model model,
+      ApiConfig apiConfig,
+      ModelTypeTable createTypeTable,
+      SurfaceNamer namer,
+      List<ServiceDocView> serviceDocs) {
+    PackageInfoView.Builder packageInfo = PackageInfoView.newBuilder();
+
+    packageInfo.templateFileName(PACKAGE_INFO_TEMPLATE_FILENAME);
+
+    packageInfo.serviceTitle(model.getServiceConfig().getTitle());
+    packageInfo.serviceDocs(serviceDocs);
+    packageInfo.packageName(apiConfig.getPackageName());
+
+    Interface firstInterface = new InterfaceView().getElementIterable(model).iterator().next();
+    String outputPath = pathMapper.getOutputPath(firstInterface, apiConfig);
+    packageInfo.outputPath(outputPath + "/package-info.java");
+
+    return packageInfo.build();
   }
 
   private void addXApiImports(SurfaceTransformerContext context) {
