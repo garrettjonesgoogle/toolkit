@@ -15,7 +15,6 @@
 package com.google.api.codegen.gapic;
 
 import com.google.api.codegen.ApiConfig;
-import com.google.api.codegen.InterfaceListView;
 import com.google.api.codegen.InterfaceView;
 import com.google.api.codegen.ProtoFileView;
 import com.google.api.codegen.SnippetSetRunner;
@@ -26,9 +25,6 @@ import com.google.api.codegen.csharp.CSharpGapicContext;
 import com.google.api.codegen.csharp.CSharpSnippetSetRunner;
 import com.google.api.codegen.go.GoGapicContext;
 import com.google.api.codegen.go.GoSnippetSetRunner;
-import com.google.api.codegen.java.JavaGapicContext;
-import com.google.api.codegen.java.JavaIterableSnippetSetRunner;
-import com.google.api.codegen.java.JavaSnippetSetRunner;
 import com.google.api.codegen.nodejs.NodeJSGapicContext;
 import com.google.api.codegen.nodejs.NodeJSSnippetSetRunner;
 import com.google.api.codegen.py.PythonGapicContext;
