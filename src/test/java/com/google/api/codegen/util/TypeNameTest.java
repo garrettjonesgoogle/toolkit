@@ -90,5 +90,10 @@ public class TypeNameTest {
     public NamePath getNamePath(String fullName) {
       return null;
     }
+
+    @Override
+    public TypeName getContainerTypeName(String containerFullName, String elementFullName) {
+      return null;
+    }
   }
 }

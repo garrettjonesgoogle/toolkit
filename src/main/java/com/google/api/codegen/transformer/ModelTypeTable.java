@@ -105,15 +105,7 @@ public class ModelTypeTable implements ModelTypeFormatter {
   }
 
   public String getAndSaveNicknameForContainer(String containerFullName, String elementFullName) {
-    TypeName containerTypeName = typeTable.getTypeName(containerFullName);
-    TypeName elementTypeName = typeTable.getTypeName(elementFullName);
-    TypeName completeTypeName =
-        new TypeName(
-            containerTypeName.getFullName(),
-            containerTypeName.getNickname(),
-            // FIXME make not java specific
-            "%s<%i>",
-            elementTypeName);
+    TypeName completeTypeName = typeTable.getContainerTypeName(containerFullName, elementFullName);
     return typeTable.getAndSaveNicknameFor(completeTypeName);
   }
 

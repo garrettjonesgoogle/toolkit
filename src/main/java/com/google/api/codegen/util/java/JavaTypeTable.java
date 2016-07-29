@@ -77,6 +77,17 @@ public class JavaTypeTable implements TypeTable {
     return NamePath.dotted(fullName);
   }
 
+  @Override
+  public TypeName getContainerTypeName(String containerFullName, String elementFullName) {
+    TypeName containerTypeName = getTypeName(containerFullName);
+    TypeName elementTypeName = getTypeName(elementFullName);
+    return new TypeName(
+        containerTypeName.getFullName(),
+        containerTypeName.getNickname(),
+        "%s<%i>",
+        elementTypeName);
+  }
+
   public String getAndSaveNicknameFor(String fullName) {
     return getAndSaveNicknameFor(getTypeName(fullName));
   }
