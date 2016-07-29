@@ -24,6 +24,9 @@ public interface TypeTable extends TypeNameConverter {
   @Override
   TypeName getTypeName(String fullName);
 
+  @Override
+  NamePath getNamePath(String fullName);
+
   /**
    * Return a new TypeTable with the same concrete type as this one.
    */

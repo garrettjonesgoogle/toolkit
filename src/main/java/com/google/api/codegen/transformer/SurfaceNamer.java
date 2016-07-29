@@ -22,6 +22,7 @@ import com.google.api.codegen.util.Name;
 import com.google.api.codegen.util.NameFormatter;
 import com.google.api.codegen.util.NameFormatterDelegator;
 import com.google.api.codegen.util.NamePath;
+import com.google.api.codegen.util.TypeNameConverter;
 import com.google.api.tools.framework.aspects.documentation.model.DocumentationUtil;
 import com.google.api.tools.framework.model.Field;
 import com.google.api.tools.framework.model.Interface;
@@ -45,10 +46,15 @@ import java.util.List;
  */
 public class SurfaceNamer extends NameFormatterDelegator {
   private ModelTypeFormatter modelTypeFormatter;
+  private TypeNameConverter typeNameConverter;
 
-  public SurfaceNamer(NameFormatter languageNamer, ModelTypeFormatter modelTypeFormatter) {
+  public SurfaceNamer(
+      NameFormatter languageNamer,
+      ModelTypeFormatter modelTypeFormatter,
+      TypeNameConverter typeNameConverter) {
     super(languageNamer);
     this.modelTypeFormatter = modelTypeFormatter;
+    this.typeNameConverter = typeNameConverter;
   }
 
   public ModelTypeFormatter getModelTypeFormatter() {
@@ -197,14 +203,13 @@ public class SurfaceNamer extends NameFormatterDelegator {
   }
 
   public String getGrpcClientTypeName(Interface service) {
-    // FIXME make general (e.g. if Java wanted to use this); needs to use modelTypeFormatter.getFullNameFor
-    NamePath namePath = NamePath.dotted(service.getFullName());
+    NamePath namePath = typeNameConverter.getNamePath(modelTypeFormatter.getFullNameFor(service));
     String className = className(Name.upperCamel(namePath.getHead(), "Client"));
     return qualifiedName(namePath.withHead(className));
   }
 
   public String getGrpcContainerTypeName(Interface service) {
-    NamePath namePath = NamePath.dotted(modelTypeFormatter.getFullNameFor(service));
+    NamePath namePath = typeNameConverter.getNamePath(modelTypeFormatter.getFullNameFor(service));
     String className = className(Name.upperCamel(namePath.getHead(), "Grpc"));
     return qualifiedName(namePath.withHead(className));
   }

@@ -22,4 +22,9 @@ public interface TypeNameConverter {
    * Maps the given fullName to a TypeName.
    */
   TypeName getTypeName(String fullName);
+
+  /**
+   * Maps the given fullName to a NamePath.
+   */
+  NamePath getNamePath(String fullName);
 }

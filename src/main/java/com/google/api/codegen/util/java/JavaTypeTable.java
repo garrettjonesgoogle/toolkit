@@ -15,6 +15,7 @@
 package com.google.api.codegen.util.java;
 
 import com.google.api.codegen.LanguageUtil;
+import com.google.api.codegen.util.NamePath;
 import com.google.api.codegen.util.TypeAlias;
 import com.google.api.codegen.util.TypeName;
 import com.google.api.codegen.util.TypeTable;
@@ -69,6 +70,11 @@ public class JavaTypeTable implements TypeTable {
     }
     String shortTypeName = fullName.substring(lastDotIndex + 1);
     return new TypeName(fullName, shortTypeName);
+  }
+
+  @Override
+  public NamePath getNamePath(String fullName) {
+    return NamePath.dotted(fullName);
   }
 
   public String getAndSaveNicknameFor(String fullName) {

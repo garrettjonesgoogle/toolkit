@@ -85,5 +85,10 @@ public class TypeNameTest {
     public List<String> getImports() {
       return null;
     }
+
+    @Override
+    public NamePath getNamePath(String fullName) {
+      return null;
+    }
   }
 }

@@ -19,9 +19,9 @@ import com.google.api.codegen.ServiceMessages;
 import com.google.api.codegen.transformer.ModelTypeFormatterImpl;
 import com.google.api.codegen.transformer.ModelTypeTable;
 import com.google.api.codegen.transformer.SurfaceNamer;
-import com.google.api.codegen.util.TypeName;
 import com.google.api.codegen.util.java.JavaNameFormatter;
 import com.google.api.codegen.util.java.JavaRenderingUtil;
+import com.google.api.codegen.util.java.JavaTypeTable;
 import com.google.api.tools.framework.model.Method;
 import com.google.api.tools.framework.model.TypeRef;
 
@@ -37,7 +37,10 @@ public class JavaSurfaceNamer extends SurfaceNamer {
    * Standard constructor.
    */
   public JavaSurfaceNamer() {
-    super(new JavaNameFormatter(), new ModelTypeFormatterImpl(new JavaModelTypeNameConverter()));
+    super(
+        new JavaNameFormatter(),
+        new ModelTypeFormatterImpl(new JavaModelTypeNameConverter()),
+        new JavaTypeTable());
   }
 
   @Override
