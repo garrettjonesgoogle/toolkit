@@ -75,6 +75,10 @@ public class SurfaceNamer extends NameFormatterMixin {
     return varName(Name.upperCamel(interfaze.getSimpleName(), "Settings"));
   }
 
+  public String getApiSettingsBuilderVarName(Interface interfaze) {
+    return varName(Name.upperCamel(interfaze.getSimpleName(), "SettingsBuilder"));
+  }
+
   public String getVariableName(Name identifier, InitValueConfig initValueConfig) {
     if (initValueConfig == null || !initValueConfig.hasFormattingConfig()) {
       return varName(identifier);
@@ -172,6 +176,18 @@ public class SurfaceNamer extends NameFormatterMixin {
     // do nothing
   }
 
+  public void addBundlingDescriptorImports(ModelTypeTable typeTable) {
+    // do nothing
+  }
+
+  public void addPageStreamingCallSettingsImports(ModelTypeTable typeTable) {
+    // do nothing
+  }
+
+  public void addBundlingCallSettingsImports(ModelTypeTable typeTable) {
+    // do nothing
+  }
+
   public String getMethodKey(Method method) {
     return keyName(Name.upperCamel(method.getSimpleName()));
   }
@@ -181,13 +197,14 @@ public class SurfaceNamer extends NameFormatterMixin {
   }
 
   public String getGrpcClientTypeName(Interface service) {
+    // FIXME make general (e.g. if Java wanted to use this); needs to use modelTypeFormatter.getFullNameFor
     NamePath namePath = NamePath.dotted(service.getFullName());
     String className = className(Name.upperCamel(namePath.getHead(), "Client"));
     return qualifiedName(namePath.withHead(className));
   }
 
   public String getGrpcContainerTypeName(Interface service) {
-    NamePath namePath = NamePath.dotted(service.getFullName());
+    NamePath namePath = NamePath.dotted(modelTypeFormatter.getFullNameFor(service));
     String className = className(Name.upperCamel(namePath.getHead(), "Grpc"));
     return qualifiedName(namePath.withHead(className));
   }
@@ -284,13 +301,5 @@ public class SurfaceNamer extends NameFormatterMixin {
 
   public String getAndSavePagedResponseTypeName(ModelTypeTable typeTable, TypeRef resourceType) {
     return getNotImplementedString("SurfaceNamer.getAndSavePagedResponseTypeName");
-  }
-
-  public String getPageStreamingCallSettingsTypeName() {
-    return getNotImplementedString("SurfaceNamer.getPageStreamingCallSettingsTypeName");
-  }
-
-  public String getBundlingCallSettingsTypeName() {
-    return getNotImplementedString("SurfaceNamer.getBundlingCallSettingsTypeName");
   }
 }

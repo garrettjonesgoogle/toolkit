@@ -25,6 +25,8 @@ public abstract class StaticXSettingsView implements ViewModel {
 
   public abstract String packageName();
 
+  public abstract SettingsDocView doc();
+
   public abstract String name();
 
   public abstract String serviceAddress();
@@ -61,6 +63,8 @@ public abstract class StaticXSettingsView implements ViewModel {
     public abstract Builder templateFileName(String val);
 
     public abstract Builder packageName(String val);
+
+    public abstract Builder doc(SettingsDocView generateSettingsDoc);
 
     public abstract Builder name(String val);
 

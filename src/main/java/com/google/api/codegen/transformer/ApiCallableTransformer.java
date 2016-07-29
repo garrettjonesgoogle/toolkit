@@ -122,14 +122,14 @@ public class ApiCallableTransformer {
         namer.getNotImplementedString(notImplementedPrefix + "bundlingDescriptorName"));
 
     if (methodConfig.isPageStreaming()) {
-      typeTable.saveNicknameFor(namer.getPageStreamingCallSettingsTypeName());
+      namer.addPageStreamingCallSettingsImports(typeTable);
       settings.type(ApiCallableType.PagedApiCallable);
       TypeRef resourceType = methodConfig.getPageStreaming().getResourcesField().getType();
       settings.resourceTypeName(typeTable.getAndSaveNicknameForElementType(resourceType));
       settings.pageStreamingDescriptorName(namer.getPageStreamingDescriptorConstName(method));
     } else {
       if (methodConfig.isBundling()) {
-        typeTable.saveNicknameFor(namer.getBundlingCallSettingsTypeName());
+        namer.addBundlingCallSettingsImports(typeTable);
         settings.type(ApiCallableType.BundlingApiCallable);
         settings.bundlingDescriptorName(namer.getBundlingDescriptorConstName(method));
         settings.bundlingConfig(generateBundlingConfig(context));

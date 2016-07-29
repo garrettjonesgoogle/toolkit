@@ -58,6 +58,7 @@ public class PageStreamingTransformer {
       SurfaceTransformerContext context) {
     List<PageStreamingDescriptorClassView> descriptors = new ArrayList<>();
 
+    context.getNamer().addPageStreamingDescriptorImports(context.getTypeTable());
     for (Method method : context.getInterface().getMethods()) {
       MethodConfig methodConfig = context.getMethodConfig(method);
       if (!methodConfig.isPageStreaming()) {

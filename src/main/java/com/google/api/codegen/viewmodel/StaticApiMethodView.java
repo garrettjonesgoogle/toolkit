@@ -43,6 +43,8 @@ public abstract class StaticApiMethodView implements ApiMethodView {
 
   public abstract String name();
 
+  public abstract String settingsGetterName();
+
   public abstract List<RequestObjectParamView> methodParams();
 
   public abstract List<PathTemplateCheckView> pathTemplateChecks();
@@ -84,6 +86,8 @@ public abstract class StaticApiMethodView implements ApiMethodView {
     public abstract Builder responseTypeName(String responseTypeName);
 
     public abstract Builder name(String name);
+
+    public abstract Builder settingsGetterName(String name);
 
     public abstract Builder methodParams(List<RequestObjectParamView> methodParams);
 

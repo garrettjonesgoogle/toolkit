@@ -37,6 +37,7 @@ import com.google.api.codegen.viewmodel.PackageInfoView;
 import com.google.api.codegen.viewmodel.RetryCodesDefinitionView;
 import com.google.api.codegen.viewmodel.RetryParamsDefinitionView;
 import com.google.api.codegen.viewmodel.ServiceDocView;
+import com.google.api.codegen.viewmodel.SettingsDocView;
 import com.google.api.codegen.viewmodel.StaticApiMethodView;
 import com.google.api.codegen.viewmodel.StaticXApiView;
 import com.google.api.codegen.viewmodel.StaticXSettingsView;
@@ -68,9 +69,9 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
   private PageStreamingTransformer pageStreamingTransformer;
   private BundlingTransformer bundlingTransformer;
 
-  private static final String XAPI_TEMPLATE_FILENAME = "java/xapi.snip";
-  private static final String XSETTINGS_TEMPLATE_FILENAME = "java/xsettings.snip";
-  private static final String PACKAGE_INFO_TEMPLATE_FILENAME = "java/xpackage-info.snip";
+  private static final String XAPI_TEMPLATE_FILENAME = "java/main.snip";
+  private static final String XSETTINGS_TEMPLATE_FILENAME = "java/settings.snip";
+  private static final String PACKAGE_INFO_TEMPLATE_FILENAME = "java/package-info.snip";
 
   /**
    * Standard constructor.
@@ -106,7 +107,8 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
       serviceDocs.add(xapi.doc());
 
       context = SurfaceTransformerContext.create(service, apiConfig, createTypeTable(), namer);
-      StaticXSettingsView xsettings = generateXSettings(context);
+      StaticApiMethodView exampleApiMethod = getExampleApiMethod(xapi.apiMethods());
+      StaticXSettingsView xsettings = generateXSettings(context, exampleApiMethod);
       surfaceDocs.add(xsettings);
     }
 
@@ -153,8 +155,8 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     return xapiClass.build();
   }
 
-  private ApiMethodView getExampleApiMethod(List<StaticApiMethodView> methods) {
-    ApiMethodView exampleApiMethod = null;
+  private StaticApiMethodView getExampleApiMethod(List<StaticApiMethodView> methods) {
+    StaticApiMethodView exampleApiMethod = null;
     for (StaticApiMethodView method : methods) {
       if (method.type().equals(ApiMethodType.FlattenedMethod)) {
         exampleApiMethod = method;
@@ -167,12 +169,14 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     return exampleApiMethod;
   }
 
-  private StaticXSettingsView generateXSettings(SurfaceTransformerContext context) {
+  private StaticXSettingsView generateXSettings(
+      SurfaceTransformerContext context, StaticApiMethodView exampleApiMethod) {
     addXSettingsImports(context);
 
     StaticXSettingsView.Builder xsettingsClass = StaticXSettingsView.newBuilder();
     xsettingsClass.templateFileName(XSETTINGS_TEMPLATE_FILENAME);
     xsettingsClass.packageName(context.getApiConfig().getPackageName());
+    xsettingsClass.doc(generateSettingsDoc(context, exampleApiMethod));
     String name = context.getNamer().getApiSettingsClassName(context.getInterface());
     xsettingsClass.name(name);
     ServiceConfig serviceConfig = new ServiceConfig();
@@ -247,6 +251,22 @@ public class JavaGapicSurfaceTransformer implements ModelToViewTransformer {
     typeTable.saveNicknameFor("java.io.IOException");
     typeTable.saveNicknameFor("java.util.List");
     typeTable.saveNicknameFor("java.util.concurrent.ScheduledExecutorService");
+  }
+
+  public SettingsDocView generateSettingsDoc(
+      SurfaceTransformerContext context, StaticApiMethodView exampleApiMethod) {
+    SurfaceNamer namer = context.getNamer();
+    SettingsDocView.Builder settingsDoc = SettingsDocView.newBuilder();
+    ServiceConfig serviceConfig = new ServiceConfig();
+    settingsDoc.serviceAddress(serviceConfig.getServiceAddress(context.getInterface()));
+    settingsDoc.servicePort(serviceConfig.getServicePort());
+    settingsDoc.exampleApiMethodName(exampleApiMethod.name());
+    settingsDoc.exampleApiMethodSettingsGetter(exampleApiMethod.settingsGetterName());
+    settingsDoc.apiClassName(namer.getApiWrapperClassName(context.getInterface()));
+    settingsDoc.settingsVarName(namer.getApiSettingsVariableName(context.getInterface()));
+    settingsDoc.settingsClassName(namer.getApiSettingsClassName(context.getInterface()));
+    settingsDoc.settingsBuilderVarName(namer.getApiSettingsBuilderVarName(context.getInterface()));
+    return settingsDoc.build();
   }
 
   private List<StaticApiMethodView> generateApiMethods(SurfaceTransformerContext context) {

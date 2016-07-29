@@ -66,8 +66,6 @@ public class MainGapicProviderFactory
   public static final String PYTHON = "python";
   public static final String RUBY = "ruby";
 
-  public static final String JAVA_SURFACE = "java_surface";
-
   /**
    * Create the GapicProviders based on the given id
    */
@@ -118,36 +116,6 @@ public class MainGapicProviderFactory
       return Arrays.<GapicProvider<? extends Object>>asList(provider);
 
     } else if (id.equals(JAVA)) {
-      GapicCodePathMapper javaPathMapper =
-          CommonGapicCodePathMapper.newBuilder()
-              .setPrefix("src/main/java")
-              .setShouldAppendPackage(true)
-              .build();
-      GapicProvider<? extends Object> mainProvider =
-          CommonGapicProvider.<Interface>newBuilder()
-              .setModel(model)
-              .setView(new InterfaceView())
-              .setContext(new JavaGapicContext(model, apiConfig))
-              .setSnippetSetRunner(
-                  new JavaSnippetSetRunner<Interface>(SnippetSetRunner.SNIPPET_RESOURCE_ROOT))
-              .setSnippetFileNames(Arrays.asList("java/main.snip", "java/settings.snip"))
-              .setCodePathMapper(javaPathMapper)
-              .build();
-      GapicProvider<? extends Object> packageInfoProvider =
-          CommonGapicProvider.<Iterable<Interface>>newBuilder()
-              .setModel(model)
-              .setView(new InterfaceListView())
-              .setContext(new JavaGapicContext(model, apiConfig))
-              .setSnippetSetRunner(
-                  new JavaIterableSnippetSetRunner<Interface>(
-                      SnippetSetRunner.SNIPPET_RESOURCE_ROOT))
-              .setSnippetFileNames(Arrays.asList("java/package-info.snip"))
-              .setCodePathMapper(javaPathMapper)
-              .build();
-
-      return Arrays.<GapicProvider<? extends Object>>asList(mainProvider, packageInfoProvider);
-
-    } else if (id.equals(JAVA_SURFACE)) {
       GapicCodePathMapper javaPathMapper =
           CommonGapicCodePathMapper.newBuilder()
               .setPrefix("src/main/java")

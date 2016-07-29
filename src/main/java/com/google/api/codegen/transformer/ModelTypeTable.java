@@ -16,6 +16,7 @@ package com.google.api.codegen.transformer;
 
 import com.google.api.codegen.util.TypeName;
 import com.google.api.codegen.util.TypeTable;
+import com.google.api.tools.framework.model.ProtoElement;
 import com.google.api.tools.framework.model.TypeRef;
 
 import java.util.List;
@@ -41,6 +42,11 @@ public class ModelTypeTable implements ModelTypeFormatter {
   @Override
   public String getFullNameFor(TypeRef type) {
     return typeFormatter.getFullNameFor(type);
+  }
+
+  @Override
+  public String getFullNameFor(ProtoElement element) {
+    return typeFormatter.getFullNameFor(element);
   }
 
   @Override

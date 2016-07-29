@@ -163,6 +163,7 @@ public class ApiMethodTransformer {
         context.getTypeTable().getAndSaveNicknameFor(context.getMethod().getInputType()));
     methodViewBuilder.apiClassName(namer.getApiWrapperClassName(context.getInterface()));
     methodViewBuilder.apiVariableName(namer.getApiWrapperVariableName(context.getInterface()));
+    methodViewBuilder.settingsGetterName(namer.getSettingsFunctionName(context.getMethod()));
   }
 
   private void setListMethodFields(

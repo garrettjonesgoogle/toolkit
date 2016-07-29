@@ -67,6 +67,8 @@ public class BundlingTransformer {
     desc.fnGetSubresponseByIndex(namer.getGetByIndexCallName(bundling.getSubresponseField()));
     desc.fnSetSubresponse(namer.getSetFunctionCallName(bundling.getSubresponseField()));
 
+    namer.addBundlingDescriptorImports(typeTable);
+
     return desc.build();
   }
 

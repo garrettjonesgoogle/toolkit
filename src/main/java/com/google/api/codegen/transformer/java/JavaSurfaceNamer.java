@@ -51,6 +51,30 @@ public class JavaSurfaceNamer extends SurfaceNamer {
   }
 
   @Override
+  public void addPageStreamingDescriptorImports(ModelTypeTable typeTable) {
+    typeTable.saveNicknameFor("com.google.api.gax.grpc.PageStreamingDescriptor");
+  }
+
+  @Override
+  public void addBundlingDescriptorImports(ModelTypeTable typeTable) {
+    typeTable.saveNicknameFor("com.google.api.gax.grpc.BundlingDescriptor");
+    typeTable.saveNicknameFor("com.google.api.gax.grpc.RequestIssuer");
+    typeTable.saveNicknameFor("java.util.ArrayList");
+    typeTable.saveNicknameFor("java.util.Collection");
+  }
+
+  @Override
+  public void addPageStreamingCallSettingsImports(ModelTypeTable typeTable) {
+    typeTable.saveNicknameFor("com.google.api.gax.grpc.PageStreamingCallSettings");
+  }
+
+  @Override
+  public void addBundlingCallSettingsImports(ModelTypeTable typeTable) {
+    typeTable.saveNicknameFor("com.google.api.gax.grpc.BundlingCallSettings");
+    typeTable.saveNicknameFor("com.google.api.gax.grpc.BundlingSettings");
+  }
+
+  @Override
   public String getStaticReturnTypeName(Method method, MethodConfig methodConfig) {
     if (ServiceMessages.s_isEmptyType(method.getOutputType())) {
       return "void";
@@ -72,15 +96,5 @@ public class JavaSurfaceNamer extends SurfaceNamer {
     String resourceTypeName = typeTable.getFullNameForElementType(resourceType);
     return typeTable.getAndSaveNicknameForContainer(
         "com.google.api.gax.core.PageAccessor", resourceTypeName);
-  }
-
-  @Override
-  public String getPageStreamingCallSettingsTypeName() {
-    return "com.google.api.gax.grpc.PageStreamingCallSettings";
-  }
-
-  @Override
-  public String getBundlingCallSettingsTypeName() {
-    return "com.google.api.gax.grpc.BundlingCallSettings";
   }
 }
