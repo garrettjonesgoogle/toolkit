@@ -17,6 +17,12 @@ package com.google.api.codegen.ruby;
 import com.google.api.codegen.ApiConfig;
 import com.google.api.codegen.GapicContext;
 import com.google.api.codegen.MethodConfig;
+import com.google.api.codegen.transformer.InitCodeTransformer;
+import com.google.api.codegen.transformer.MethodTransformerContext;
+import com.google.api.codegen.transformer.ModelTypeTable;
+import com.google.api.codegen.transformer.SurfaceTransformerContext;
+import com.google.api.codegen.transformer.php.PhpSurfaceNamer;
+import com.google.api.codegen.viewmodel.InitCodeView;
 import com.google.api.tools.framework.aspects.documentation.model.DocumentationUtil;
 import com.google.api.tools.framework.aspects.documentation.model.ElementDocumentationAttribute;
 import com.google.api.tools.framework.model.Field;
@@ -332,6 +338,17 @@ public class RubyGapicContext extends GapicContext implements RubyContext {
 
   public Iterable<String> getApiModules() {
     return Splitter.on("::").splitToList(getApiConfig().getPackageName());
+  }
+
+  public InitCodeView getInitCodeView(Interface service, Method method) {
+    ModelTypeTable modelTypeTable =
+        new ModelTypeTable(new RubyTypeTable(), new RubyModelTypeNameConverter());
+    SurfaceTransformerContext context =
+        SurfaceTransformerContext.create(
+            service, getApiConfig(), modelTypeTable, new RubySurfaceNamer());
+    MethodTransformerContext methodContext = context.asMethodContext(method);
+    InitCodeTransformer transformer = new InitCodeTransformer();
+    return transformer.generateInitCode(methodContext, methodContext.getMethodConfig().getRequiredFields());
   }
 
   // Constants
